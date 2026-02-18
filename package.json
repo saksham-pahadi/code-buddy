@@ -14,9 +14,12 @@
     "@lineiconshq/free-icons": "^1.0.4",
     "@lineiconshq/react-lineicons": "^1.0.5",
     "@reduxjs/toolkit": "^2.11.2",
+    "axios": "^1.13.5",
+    "mongoose": "^9.2.1",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-markdown": "^10.1.0",
     "react-redux": "^9.2.0"
   },
   "devDependencies": {
