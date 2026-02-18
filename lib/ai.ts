@@ -12,20 +12,28 @@ export async function analyzeCodeLocal(code: string) {
       Return response strictly in JSON.
       JSON format:
       {
-        "summary": "Short 2-3 line explanation of what code does",
-        "time_complexity": "Big-O notation with short reason",
-        "space_complexity": "Big-O notation with short reason",
-        "issues": ["Issue 1", "Issue 2"],
-        "improvements": ["Improvement 1", "Improvement 2"]
+        "code_explaination": "Short 2-3 line explanation of what code does",
+        "time_complexity": "Big-O notation with short reason without explanation",
+        "space_complexity": "Big-O notation with short reason without explanation",
+        "Bug&Error": ["Issue 1", "Issue 2"],
+        "optimization": ["Improvement 1", "Improvement 2"],
+        "scores": {
+    "readability": 78.5,
+    "maintainability": 82.0,
+    "performance": 75.0,
+    "security": 85.0
+  }
       }
       
-      Rules:
-      - Do NOT leave any field empty.
-      - If no issues found, write "No major issues detected".
-      - If no improvements found, suggest at least one best practice.
+      Strict Rules:
+      - Do NOT leave any field empty (mentioned in format).
+      - If no Bug&Error found, write "No major issues detected".
+      - If no optimization found, suggest at least one best practice.
       - Keep answers short and clear.
       - Return ONLY valid JSON.
       - Do NOT include explanations outside JSON.
+      - in scores field, provide only number/float (not any string) score out of 100 for each category is based on the code quality without any explaination.
+      - in score  maintainability, readability, performance and security. all categories's score is mendatory in this serial in Array.
       
       
 

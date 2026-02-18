@@ -10,7 +10,7 @@ const Navbar = () => {
   const mode = useSelector((state: RootState) => state.theme.mode);
   const dispatch = useDispatch();
   return (
-    <div className="flex items-center justify-between w-full h-16 transition-all ease-in-out duration-2000 ">
+    <div className={`flex sticky top-0 z-10 border-b-2 items-center justify-between w-full h-16 transition-all ease-in-out duration-1000 ${mode === "dark" ? "bg-black text-white border-gray-700" : "bg-white text-black border-gray-300"}`}>
       <button
         onClick={() => dispatch(toggleTheme())}
         className={`px-4 py-2 rounded ${mode === "dark" ? "bg-gray-300 text-black" : "bg-gray-700 text-white"}`}
@@ -25,6 +25,8 @@ const Navbar = () => {
           <Image title="Temp Chat" className={` ${mode === "dark" ? "invert" : ""} transition-all ease-in-out duration-1000 hover:bg-gray-200 p-1 rounded-full`} src="/chat.svg" alt="Share Icon" width={40} height={40} />
         </button>
       </div>
+      
+
     </div>
   );
 };
