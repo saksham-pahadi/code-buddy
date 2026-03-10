@@ -60,32 +60,59 @@ export async function analyzeCodeLocal(code: string): Promise<any> {
 }
 
 export async function analyzeCodeCloud(code: string) {
-  const response = await fetch(
-    "https://openrouter.ai/api/v1/chat/completions",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "deepseek/deepseek-coder",
-        messages: [
-          { role: "system", content: "You are a professional code analyzer." },
-          { role: "user", content: code },
-        ],
-      }),
-    },
-  );
 
-  
-  
+  const prompt = `
+You are a strict code analyzer.
+
+Return ONLY JSON.
+
+{
+ "code_explaination": "2-3 line summary",
+ "time_complexity": "O(n) short reason",
+ "space_complexity": "O(n) short reason",
+ "Bug&Error": [],
+ "optimization": [],
+ "scores": {
+   "readability": 0,
+   "maintainability": 0,
+   "performance": 0,
+   "security": 0
+ }
+}
+
+Code:
+${code}
+`
+
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "http://localhost:3000",
+      "X-Title": "code-buddy"
+    },
+    body: JSON.stringify({
+      model: "openai/gpt-oss-120b:free",
+      messages: [
+        {
+          role: "user",
+          content: prompt
+        }
+      ]
+    })
+  })
+
+  const data = await response.json()
+  console.log("Raw response from cloud API:", data);
+
+  return data.choices[0].message.content
 }
 
 export async function analyzeCode(code: string) {
   if (process.env.NODE_ENV === "development") {
-    return analyzeCodeLocal(code);
-  } else {
     return analyzeCodeCloud(code);
+  } else {
+    return analyzeCodeLocal(code);
   }
 }
