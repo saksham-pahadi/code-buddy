@@ -1,4 +1,5 @@
-export async function analyzeCodeLocal(code: string) {
+export async function analyzeCodeLocal(code: string): Promise<any> {
+ 
   const response = await fetch("http://localhost:11434/api/generate", {
     method: "POST",
     headers: {
@@ -7,38 +8,33 @@ export async function analyzeCodeLocal(code: string) {
     body: JSON.stringify({
       model: "deepseek-coder:1.3b",
       prompt: `
-      You are an expert software engineer.
-      Analyze the following code carefully.
-      Return response strictly in JSON.
-      JSON format:
-      {
-        "code_explaination": "Short 2-3 line explanation of what code does",
-        "time_complexity": "Big-O notation with short reason without explanation",
-        "space_complexity": "Big-O notation with short reason without explanation",
-        "Bug&Error": ["Issue 1", "Issue 2"],
-        "optimization": ["Improvement 1", "Improvement 2"],
-        "scores": {
-    "readability": 78.5,
-    "maintainability": 82.0,
-    "performance": 75.0,
-    "security": 85.0
-  }
-      }
-      
-      Strict Rules:
-      - Do NOT leave any field empty (mentioned in format).
-      - If no Bug&Error found, write "No major issues detected".
-      - If no optimization found, suggest at least one best practice.
-      - Keep answers short and clear.
-      - Return ONLY valid JSON.
-      - Do NOT include explanations outside JSON.
-      - in scores field, provide only number/float (not any string) score out of 100 for each category is based on the code quality without any explaination.
-      - in score  maintainability, readability, performance and security. all categories's score is mendatory in this serial in Array.
-      
-      
+//       You are a strict code analyzer.
+// Code:${code}
+// Analyze the given code and return ONLY valid JSON.
+// Do not write anything outside JSON.
+// Do not add explanation.
+// Do not add markdown.
+// Do not add text before or after JSON.
 
-        Code:
-        ${code}
+// Required exact this JSON format, nothing should be changed, added, or removed. The JSON should be parsable without any error:
+
+// {
+//   "code_explaination": "2-3 line summary",
+//   "time_complexity": "O(n) short reason",
+//   "space_complexity": "O(n) short reason",
+//   "Bug&Error": ["issue1", "issue2"],
+//   "optimization": ["improvement1", "improvement2"],
+//   "scores": {
+//     "readability": 0,
+//     "maintainability": 0,
+//     "performance": 0,
+//     "security": 0
+//   }
+// }
+
+
+
+
         `,
         stream: false,
         format: "json",
@@ -57,8 +53,10 @@ export async function analyzeCodeLocal(code: string) {
   const raw = await response.json();
   console.log("Raw response from local API:", raw);
 
+
+
   
-  return raw;
+  return raw.response;
 }
 
 export async function analyzeCodeCloud(code: string) {
@@ -80,8 +78,8 @@ export async function analyzeCodeCloud(code: string) {
     },
   );
 
-  const data = await response.json();
-  return data.choices[0].message.content;
+  
+  
 }
 
 export async function analyzeCode(code: string) {
