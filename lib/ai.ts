@@ -1,5 +1,5 @@
 export async function analyzeCodeLocal(code: string): Promise<any> {
- 
+  try{
   const response = await fetch("http://localhost:11434/api/generate", {
     method: "POST",
     headers: {
@@ -7,35 +7,31 @@ export async function analyzeCodeLocal(code: string): Promise<any> {
     },
     body: JSON.stringify({
       model: "deepseek-coder:1.3b",
-      prompt: `
-//       You are a strict code analyzer.
-// Code:${code}
-// Analyze the given code and return ONLY valid JSON.
-// Do not write anything outside JSON.
-// Do not add explanation.
-// Do not add markdown.
-// Do not add text before or after JSON.
+      prompt:  `
+You are a strict code analyzer.
 
-// Required exact this JSON format, nothing should be changed, added, or removed. The JSON should be parsable without any error:
+Return ONLY JSON.
 
-// {
-//   "code_explaination": "2-3 line summary",
-//   "time_complexity": "O(n) short reason",
-//   "space_complexity": "O(n) short reason",
-//   "Bug&Error": ["issue1", "issue2"],
-//   "optimization": ["improvement1", "improvement2"],
-//   "scores": {
-//     "readability": 0,
-//     "maintainability": 0,
-//     "performance": 0,
-//     "security": 0
-//   }
-// }
+{
+ "code_explaination": "2-3 line summary",
+ "time_complexity": "O(n) short reason",
+ "space_complexity": "O(n) short reason",
+ "Bug&Error": [],
+ "optimization": [],
+ "scores": {
+   "readability": 0,
+   "maintainability": 0,
+   "performance": 0,
+   "security": 0
+ }
+}
 
+keep the format same as above strictly. Do not add any extra text.
 
-
-
-        `,
+Code:
+${code}
+`
+,
         stream: false,
         format: "json",
         options: {
@@ -50,14 +46,28 @@ export async function analyzeCodeLocal(code: string): Promise<any> {
   // console.log("Raw response from local API:", data);
   
 
-  const raw = await response.json();
+ 
+    const raw = await response.json();
   console.log("Raw response from local API:", raw);
+  const cleaned = raw.response.replace(/\/\/.*$/gm, "");
+  console.log("Cleaned response from local API:", cleaned);
+  const objResponse = JSON.parse(cleaned);
+  console.log("Parsed object response from local API:", objResponse);
+  return { done: true,error: false, response: objResponse };
+  }catch(err){
+    console.error("Error parsing JSON from local API:", err);
+    return {  done: false,error: true };
+  }
 
 
 
   
-  return raw.response;
+  
 }
+
+
+
+
 
 export async function analyzeCodeCloud(code: string) {
 
@@ -83,7 +93,7 @@ Return ONLY JSON.
 Code:
 ${code}
 `
-
+try{
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -107,6 +117,10 @@ ${code}
   console.log("Raw response from cloud API:", data);
 
   return data.choices[0].message.content
+}catch(err){
+  console.error("Error in analyzeCodeCloud:", err);
+  return { done: true,error: true };
+}
 }
 
 export async function analyzeCode(code: string) {
