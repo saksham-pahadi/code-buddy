@@ -3,6 +3,7 @@ import "./globals.css";
 import Providers from "./provider";
 import Sidebar from "@/components/Sidebar";
 import Script from "next/script";
+import SessionWrapper from "@/components/SessionWrapper";
 
 
 const geistSans = Geist({
@@ -31,10 +32,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-wrap h-screen w-screen  suppressHydrationWarning` }
        
       >
-        <Providers>
-          <Sidebar />
-          {children}
-        </Providers>
+        <SessionWrapper>
+          <Providers>
+            <Sidebar />
+            {children}
+          </Providers>
+        </SessionWrapper>
         <Script
           src="https://cdn.lordicon.com/lordicon.js"
           strategy="afterInteractive"

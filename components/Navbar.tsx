@@ -28,7 +28,7 @@ const Navbar = () => {
           dispatch(toggleTheme());
           localStorage.setItem("theme", newTheme);
         }}
-        className={`px-4 py-2 rounded ${mode === "dark" ? "bg-gray-300 text-black" : "bg-gray-700 text-white"}`}
+        className={`px-4 py-2 rounded ${mode === "dark" ? "bg-gray-300 text-black" : "bg-gray-700 text-white"} cursor-pointer transition-all ease-in-out duration-1000`}
       >
         Switch to {mode === "dark" ? "☀️" : "🌙"}
       </button>
@@ -40,6 +40,26 @@ const Navbar = () => {
         width={100}
         height={50}
       />
+      <div className="flex gap-2">
+        <button>
+          <Image
+            className={`${mode === "dark" ? "invert" : ""} transition duration-1000 p-1 hover:bg-gray-400 rounded-full cursor-pointer`}
+            src="/share.svg"
+            alt="Share"
+            width={40}
+            height={40}
+          />
+        </button>
+        <button>
+          <Image
+            className={`${mode === "dark" ? "invert" : ""} transition duration-1000 p-1 hover:bg-gray-400 rounded-full cursor-pointer`}
+            src="/chat.svg"
+            alt="tempChat"
+            width={40}
+            height={40}
+          />
+        </button>
+      </div>
     </div>
   );
 };
