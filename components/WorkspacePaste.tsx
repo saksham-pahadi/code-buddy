@@ -2,18 +2,21 @@
 import { TypeAnimation } from "react-type-animation";
 import Editor from "@monaco-editor/react";
 import Image from "next/image";
+import { useSession } from "next-auth/react"
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RootState } from "../store/store";
 import { useSelector, useDispatch } from "react-redux";
 import Navbar from "@/components/Navbar";
-import { set } from "mongoose";
 
-export default function WorkspacePaste() {
+export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
+  const session = useSession();
   const mode = useSelector((state: RootState) => state.theme.mode);
   const [saved, setsaved] = useState(false);
   const [loading, setloading] = useState(false);
   const [done, setdone] = useState(false);
+  const [email, setemail] = useState('')
+  const [name, setName] = useState('')
 
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("java");
@@ -25,6 +28,7 @@ export default function WorkspacePaste() {
   ]);
   const [result, setResult] = useState({
     response: {
+      title: "",
       code_explaination: "",
       time_complexity: "",
       space_complexity: "",
@@ -41,6 +45,13 @@ export default function WorkspacePaste() {
     error: false,
   });
 
+  useEffect(() => {
+    if(session.status === "authenticated"){
+      setemail(session.data.user?.email || "")
+      setName(session.data.user?.name || "")
+    }
+  }, [session])
+
   function handleChange(value: string | undefined) {
     setCode(value as string);
     console.log("language:", language);
@@ -56,6 +67,7 @@ export default function WorkspacePaste() {
       done: false,
       error: false,
       response: {
+        title: "",
         code_explaination: "",
         time_complexity: "",
         space_complexity: "",
@@ -89,13 +101,20 @@ export default function WorkspacePaste() {
       const objResponse = JSON.parse(cleaned.replace(/\/\/.*$/gm, ""));
       console.log("Parsed object response type:", typeof objResponse);
       console.log("Parsed object response:", objResponse);
-      setResult({ response: objResponse, done: true, error: false });
+      const newResult = { response: objResponse, done: true, error: false };
+
+setResult(newResult);
+
+if (session.status === "authenticated") {
+  handleSave(newResult);
+}
       setloading(false);
       return;
     } catch (err) {
       console.error("Error in handleAnalyze:", err);
       setResult({
         response: {
+          title: "",
           code_explaination: "Error analyzing code! Try Again",
           time_complexity: "",
           space_complexity: "",
@@ -112,7 +131,26 @@ export default function WorkspacePaste() {
         error: true,
       });
       setloading(false);
+      
       return;
+    }
+  };
+
+
+  const handleSave = async (reportData:any) => {
+    // Implement save functionality here, e.g., send result to backend to save in database
+    try {      const res = await fetch("/api/history/save", {
+        method: "POST",
+        body: JSON.stringify({email: email,
+    username: name,
+    id:paste_id, ...reportData ,date: new Date().toLocaleString(),saved }),
+      });
+      const data = await res.json();
+      console.log("Save response:", data);
+      alert("Report saved successfully!");
+    }
+    catch (err) {
+      console.error("Error saving report:", err);
     }
   };
 
@@ -184,6 +222,7 @@ export default function WorkspacePaste() {
       }
       {!result.error && result.done && (
         <div className=" w-full border my-4 p-4 rounded">
+          <h3 className="text-xl font-bold underline">{result.response.title}</h3>
           <h2 className="font-bold">Code Explanation:</h2>
           <TypeAnimation
             sequence={[result.response.code_explaination, 1000]}
@@ -314,13 +353,13 @@ export default function WorkspacePaste() {
           />
         </div>
       )}
-
+{/* traffic alert */}
       {result.done && result.error && (
         <div className="w-full border mt-4 p-4 rounded bg-red-100 text-red-700">
-          <h2 className="font-bold">Error</h2>
-          <p>There was an error analyzing the code. Please try again.</p>
+          <h2 className="font-bold">Sorry for the inconvenience</h2>
+          <p>Due to users traffic, the analysis model is currently busy. Please try again.</p>
           <button
-            className="border bg-red-500 text-white py-2 px-4 rounded"
+            className="border bg-red-500 text-white py-2 px-4 rounded mt-1"
             onClick={handleAnalyze}
           >
             Try Again

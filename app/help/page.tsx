@@ -1,19 +1,19 @@
 "use client"
 import React from 'react'
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation";
 import Navbar from '@/components/Navbar';
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
-import { useParams } from "next/navigation";
 
 const page = () => {
-    const params = useParams();
+    const { data: session } = useSession();
+    const router = useRouter();
     const mode = useSelector((state: RootState) => state.theme.mode);
   return (
     <div className={`${mode === "dark" ? "bg-black text-white" : "bg-white text-black"} h-screen w-full md:w-83/100 px-2 transition-all ease-in-out duration-1000 overflow-y-auto`}>
       <Navbar />
-      file page
-      <h1>File ID: {params.file_id}</h1>
-      <h1>File ID Type: {typeof params.file_id}</h1>
+      help
     </div>
   )
 }

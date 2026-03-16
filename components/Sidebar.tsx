@@ -8,14 +8,20 @@ import Link from "next/link";
 import Image from "next/image";
 import Profile from "./Profile";
 import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation";
 
 const Sidebar = () => {
+  const router = useRouter();
   const [viewProfile, setviewProfile] = useState(false);
   const { data: session } = useSession();
   const [profilePic, setprofilePic] = useState("/user.svg")
+  const [username, setusername] = useState("")
   useEffect(() => {
   if (session?.user?.image) {
     setprofilePic(session.user.image)
+  }
+  if (session?.user?.name) {
+    setusername(session.user.email?.split("@")[0] || "")
   }
 }, [session])
   const mode = useSelector((state: RootState) => state.theme.mode);
@@ -26,6 +32,78 @@ const Sidebar = () => {
     { name: "Settings", icon: "/setting.svg", path: "/settings" },
     { name: "Help", icon: "/help.svg", path: "/help" },
   ];
+
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const button = e.currentTarget;
+    const text = button.querySelector("p")?.textContent;
+    const option = options.find((opt) => opt.name === text);
+    
+  }
+  const gotoHistory = () => {
+    if(session){
+      router.push(`/history/${username}`);
+    }
+    else{
+      setviewProfile(true);
+    }
+};
+  const gotoSaved = () => {
+    if(session){
+      router.push(`/saved/${username}`);
+    }
+    else{
+      setviewProfile(true);
+    }
+};
+
+const gotoSettings = () => {
+    if(session){
+      router.push(`/settings/${username}`);
+    }
+    else{
+      setviewProfile(true);
+    }
+};
+
+const gotoHelp = () => {
+    router.push(`/help`);
+}
+
+const gotoNewAnalysis = () => {
+    router.push(`/`);
+}
+
+const gotoUpgrade = () => {
+    if(session){
+      router.push(`/upgrade/${username}`);
+    }
+    else{
+      setviewProfile(true);
+    }
+}
+
+const checkOption = (optionName: string) => {
+  switch(optionName){
+    case "New Analysis":
+      gotoNewAnalysis();
+      break;
+    case "Analysis History":
+      gotoHistory();
+      break;
+    case "Saved Reports":
+      gotoSaved();
+      break;
+    case "Settings":
+      gotoSettings();
+      break;
+    case "Help":
+      gotoHelp();
+      break;
+    case "Upgrade":
+      gotoUpgrade();
+      break;
+  }
+};
 
   return (
     <div
@@ -43,10 +121,10 @@ const Sidebar = () => {
       <ul className={`flex flex-col gap-4 px-2 py-2`}>
         {
           options.map((option) => (
-            <Link key={option.name} className={`${mode === "dark" ? "hover:text-gray-800" : " hover:text-white" } hover:bg-gray-400  p-2 rounded flex items-center`} href={option.path}>
+            <button key={option.name} className={`${mode === "dark" ? "hover:text-gray-800" : " hover:text-white" } hover:bg-gray-400  p-2 rounded flex items-center`} onClick={()=>{ checkOption(option.name); }} >
               <Image className={`${mode === "dark" ? "invert" : " " } transition-all ease-in-out duration-1000`}  src={option.icon} alt="Logo" width={30} height={30} />
               <p className="ml-2">{option.name}</p>
-            </Link>
+            </button>
           ))}
       </ul>
       </div>

@@ -77,6 +77,7 @@ You are a strict code analyzer.
 Return ONLY JSON.
 
 {
+ "title": "presize title here",
  "code_explaination": "2-3 line summary",
  "time_complexity": "O(n) short reason",
  "space_complexity": "O(n) short reason",
