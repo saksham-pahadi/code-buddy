@@ -32,7 +32,7 @@ const Profile = () => {
         <h1>Welcome, {session.user?.name}!</h1>
         <p>Email: {session.user?.email}</p>
         <p>Username: {session.user?.email?.split("@")[0]}</p>
-        <button className='cursor-pointer border border-red-500 text-red-500 p-3 px-4 rounded-2xl flex items-center gap-2' onClick={() => signOut()}>
+        <button className='cursor-pointer border border-red-500 text-red-500 p-3 px-4 rounded-2xl flex items-center gap-2' onClick={() => { signOut({ callbackUrl: '/' }) }}>
           <Image src="/logout.svg" alt="Logout" width={24} height={24} />
           Sign Out
         </button>

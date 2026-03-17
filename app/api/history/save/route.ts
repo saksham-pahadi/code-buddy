@@ -1,56 +1,64 @@
 import { NextResponse } from "next/server";
 import Reports from "@/Models/Reports";
-
-import User from "@/Models/User";
 import connectDB from "@/lib/db";
-import mongoose from "mongoose";
 
 export async function POST(req: Request) {
+  try {
     const report = await req.json();
-    console.log("Received report:", report);
-    if (!report) {
-        return NextResponse.json({ error: "No report provided" }, { status: 400 });
+    console
+
+    if (!report?.email || !report?.id) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
     }
-    try {
-        await connectDB();
-        const newReport = new Reports({
-            email: report.email,
-            username: report.email.split("@")[0],
-            id: report.id,
-            response: {
-                title: report.response.title,
-                code_explaination: report.response.code_explaination,
-                time_complexity: report.response.time_complexity,
-                space_complexity: report.response.space_complexity,
-                "Bug&Error": report.response["Bug&Error"],
-                optimization: report.response.optimization,
-                scores: {
-                    maintainability: report.response.scores.maintainability,
-                    readability: report.response.scores.readability,
-                    performance: report.response.scores.performance,
-                    security: report.response.scores.security,
-                },
-            },
-            done: report.done,
-            error: report.error,
-            createdAt: report.date,
-            updatedAt: report.date,
+
+    await connectDB();
+
+    // Check if report already exists
+    const existing = await Reports.findOne({ id: report.id,email: report.email });
+
+    if (existing) {
+      // UPDATE
+      await Reports.updateOne(
+        { id: report.id, email: report.email },
+        {
+          $set: {
+            code: report.code,
+            title: report.response.title,
+            response: report.response,
+            category: report.category,
             saved: report.saved,
+            updatedAt: new Date(),
+          },
+        }
+      );
+    } else {
+      // CREATE
+      const newReport = new Reports({
+        email: report.email,
+        username: report.email.split("@")[0],
+        id: report.id,
+        code: report.code,
+        title: report.response.title,
+        response: report.response,
+        category: report.category,
+        saved: report.saved,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
 
-        });
-        await newReport.save();
-        // Update user's history
-        await User.findOneAndUpdate(
-            { email: report.email },
-            { $push: { history: { id: report.id, title: report.response.title, date: report.date, saved: report.saved } } },
-           {  upsert: true,returnDocument: "after" }
-        );
-
-    } catch (err) {
-        console.error("Error saving report:", err);
-        return NextResponse.json({ error: "Failed to save report" }, { status: 500 });
+      await newReport.save();
     }
-    // Save report to database
+
     return NextResponse.json({ message: "Report saved successfully" });
-  
+
+  } catch (err) {
+    console.error("Error saving report:", err);
+    return NextResponse.json(
+      { error: "Failed to save report" },
+      { status: 500 }
+    );
+  }
 }

@@ -8,8 +8,16 @@ import { useEffect, useState } from "react";
 import { RootState } from "../store/store";
 import { useSelector, useDispatch } from "react-redux";
 import Navbar from "@/components/Navbar";
+// type SavedItem = {
+//   id: string
+//  response: any
+//   createdAt: string
+//   category: string
+//   saved: boolean
+// }
 
 export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
+    // const [savedItems, setSavedItems] = useState<SavedItem[]>([])
   const session = useSession();
   const mode = useSelector((state: RootState) => state.theme.mode);
   const [saved, setsaved] = useState(false);
@@ -43,6 +51,7 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
     },
     done: false,
     error: false,
+    category: "cp",
   });
 
   useEffect(() => {
@@ -66,6 +75,7 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
     setResult({
       done: false,
       error: false,
+      category: "cp",
       response: {
         title: "",
         code_explaination: "",
@@ -94,42 +104,51 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
 
       console.log("Data received type:", typeof data);
       console.log("Data received:", data);
+      
 
       const cleaned = data.result;
       console.log("Cleaned response type:", typeof cleaned);
       console.log("Cleaned response:", cleaned);
-      const objResponse = JSON.parse(cleaned.replace(/\/\/.*$/gm, ""));
-      console.log("Parsed object response type:", typeof objResponse);
-      console.log("Parsed object response:", objResponse);
-      const newResult = { response: objResponse, done: true, error: false };
+      if(cleaned.done && cleaned.error){
+        setloading(false);
+        setResult({
+          response: {
+            title: "",
+            code_explaination: "Error analyzing code! Try Again",
+            time_complexity: "",
+            space_complexity: "",
+            "Bug&Error": ["nothing found"],
+            optimization: ["no improvements found"],
+            scores: {
+              maintainability: 0,
+              readability: 0,
+              performance: 0,
+              security: 0,
+            },
+          },
+          done: true,
+          error: true,
+          category: "cp",
+        });
+        
+      }else{
 
-setResult(newResult);
-
-if (session.status === "authenticated") {
-  handleSave(newResult);
-}
-      setloading(false);
+        const objResponse = JSON.parse(cleaned.replace(/\/\/.*$/gm, ""));
+        console.log("Parsed object response type:", typeof objResponse);
+        console.log("Parsed object response:", objResponse);
+        const newResult = { response: objResponse, done: true, error: false, category: "cp" };
+        
+        setResult(newResult);
+        
+        if (session.status === "authenticated") {
+          handleSave(newResult);
+        }
+        setloading(false);
+      }
       return;
     } catch (err) {
       console.error("Error in handleAnalyze:", err);
-      setResult({
-        response: {
-          title: "",
-          code_explaination: "Error analyzing code! Try Again",
-          time_complexity: "",
-          space_complexity: "",
-          "Bug&Error": ["nothing found"],
-          optimization: ["no improvements found"],
-          scores: {
-            maintainability: 0,
-            readability: 0,
-            performance: 0,
-            security: 0,
-          },
-        },
-        done: true,
-        error: true,
-      });
+      
       setloading(false);
       
       return;
@@ -143,16 +162,40 @@ if (session.status === "authenticated") {
         method: "POST",
         body: JSON.stringify({email: email,
     username: name,
-    id:paste_id, ...reportData ,date: new Date().toLocaleString(),saved }),
+    code,
+    id:paste_id, ...reportData ,date: new Date().toLocaleString(),saved, category: "cp"}),
       });
       const data = await res.json();
       console.log("Save response:", data);
-      alert("Report saved successfully!");
+      // alert("Report saved successfully!");
     }
     catch (err) {
       console.error("Error saving report:", err);
     }
   };
+
+  const toggleSave = async (id: string, currentState: boolean) => {
+    const res = await fetch("/api/togglesave", {
+      method: "POST",
+      body: JSON.stringify({
+        id,
+        email: email,
+        saved: !currentState, // toggle
+      }),
+    });
+  
+    const data = await res.json();
+  
+    // update UI instantly
+    setsaved(!currentState);
+    // setSavedItems(prev =>
+    //   prev.map(item =>
+    //     item.id === id ? { ...item, saved: !currentState } : item
+    //   )
+    // );
+  };
+
+
 
   return (
     <div className=" h-fit  ">
@@ -173,7 +216,7 @@ if (session.status === "authenticated") {
         <option className="rounded" value="css">CSS</option>
         <option className="rounded" value="sql">SQL</option>
       </select>
-      <button className={` cursor-pointer ${mode === "dark" ? "invert" : ""} transition-all ease-in-out duration-1000`} onClick={() => {setsaved(!saved)}}>
+      <button className={` cursor-pointer ${mode === "dark" ? "invert" : ""} transition-all ease-in-out duration-1000`} onClick={() => {toggleSave(paste_id, saved)}}>
         
         
         <Image title={`${saved ? "UnSave" : "Save"}`} src={`${saved ? "/saved.svg" : "/saves.svg"}`} alt="Save" width={30} height={30} />

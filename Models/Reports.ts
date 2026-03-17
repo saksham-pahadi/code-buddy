@@ -5,6 +5,7 @@ const ReportSchema = new Schema({
     email: { type: String, require: true },
     username: { type: String, require: true },
     id: { type: String, require: true  },
+    code: { type: String, require: true },
     response: {
       title: { type: String },
       code_explaination: { type: String },
@@ -24,6 +25,7 @@ const ReportSchema = new Schema({
     createdAt: { type: String, default: Date.now },
     updatedAt: { type: String, default: Date.now },
     saved: { type: Boolean, default: false },
+    category: { type: String },
 
 });
 

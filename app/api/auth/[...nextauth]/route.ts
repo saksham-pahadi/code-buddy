@@ -32,15 +32,12 @@ export const authOptions = {
           email: user.email,
           name: user.name || user.email?.split("@")[0],
           username: user.email?.split("@")[0],
-          profilepic: account.provider === "github" ? user.image : null,
+          profilepic: user.image || null,
           provider: account.provider,
         })
       }
 
-      if (account.provider === "github" && currentUser.profilepic === null) {
-        currentUser.profilepic = user.image
-        await currentUser.save()
-      }
+      
 
       return true
     },

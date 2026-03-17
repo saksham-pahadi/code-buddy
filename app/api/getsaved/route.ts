@@ -6,8 +6,6 @@ export async function POST(req: Request) {
   try {
     const { email } = await req.json();
 
-    console.log("Fetching history for:", email);
-
     if (!email) {
       return NextResponse.json(
         { error: "Email is required" },
@@ -17,20 +15,23 @@ export async function POST(req: Request) {
 
     await connectDB();
 
-    const reports = await Reports.find({ email })
+    const savedReports = await Reports.find({
+      email: email,
+      saved: true,
+    })
       .select("id response category createdAt saved")
-      .sort({ createdAt: -1 }) // latest first
+      .sort({ createdAt: -1 })
       .lean();
 
-    console.log("Fetched reports:", reports);
-
-    return NextResponse.json({ history: reports });
+    return NextResponse.json({
+      history: savedReports,
+    });
 
   } catch (err) {
-    console.error("Error fetching history:", err);
+    console.error("Error fetching saved reports:", err);
 
     return NextResponse.json(
-      { error: "Failed to fetch history" },
+      { error: "Failed to fetch saved reports" },
       { status: 500 }
     );
   }
