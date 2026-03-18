@@ -1,11 +1,12 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../store/store";
 import { setDark, setLight, toggleTheme } from "@/store/themeSlice";
 import Image from "next/image";
 
 const Navbar = () => {
+  const [openShare, setopenShare] = useState(false)
   const mode = useSelector((state: RootState) => state.theme.mode);
   const dispatch = useDispatch();
 
@@ -19,6 +20,10 @@ const Navbar = () => {
       dispatch(setLight());
     }
   }, [dispatch]);
+
+  const tempAnalysis = () => {
+    alert("This feature is coming soon! 🚀");
+  }
 
   return (
     <div className={`flex sticky top-0 z-10 border-b-2 items-center justify-between w-full h-16 transition-all ease-in-out duration-1000 ${mode === "dark" ? "bg-black text-white border-gray-700" : "bg-white text-black border-gray-300"}`}>
@@ -41,9 +46,10 @@ const Navbar = () => {
         height={50}
       />
       <div className="flex gap-2">
-        <button>
+        <button onClick={()=>{setopenShare(!openShare)}}>
           <Image
             className={`${mode === "dark" ? "invert" : ""} transition duration-1000 p-1 hover:bg-gray-400 rounded-full cursor-pointer`}
+            title="Share"
             src="/share.svg"
             alt="Share"
             width={40}
@@ -53,6 +59,7 @@ const Navbar = () => {
         <button>
           <Image
             className={`${mode === "dark" ? "invert" : ""} transition duration-1000 p-1 hover:bg-gray-400 rounded-full cursor-pointer`}
+            title="Temp Analysis"
             src="/chat.svg"
             alt="tempChat"
             width={40}
@@ -60,6 +67,15 @@ const Navbar = () => {
           />
         </button>
       </div>
+      {openShare && (<div className={` fixed h-screen w-screen inset-0  flex items-center justify-center z-50`}>
+              <div className={`h-1/2 w-1/2 ${mode === "dark" ? "bg-gray-800 text-white" : "bg-white text-black"} rounded p-4 relative border transition-all ease-in-out duration-1000`}>
+      <Image className={`${mode === "dark" ? "invert" : ""} font-bold border rounded inline p-2 self-end cursor-pointer`} onClick={()=>{setopenShare(!openShare)}} src="/cross.svg" alt="Close" width={50} height={50} />
+              
+              <h2>Share this report</h2>
+              </div>
+              </div>
+      )}
+      {openShare && (<div className="fixed h-screen w-screen inset-0 bg-black opacity-50 z-40"></div>)}
     </div>
   );
 };

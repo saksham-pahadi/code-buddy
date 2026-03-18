@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { RootState } from "../store/store";
 import { useSelector, useDispatch } from "react-redux";
 import Navbar from "@/components/Navbar";
+import { get } from "http";
 // type SavedItem = {
 //   id: string
 //  response: any
@@ -28,12 +29,7 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
 
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("java");
-  const [Score, setscore] = useState([
-    "Maintainability: ",
-    "Readability: ",
-    "Performance: ",
-    "Security: ",
-  ]);
+  
   const [result, setResult] = useState({
     response: {
       title: "",
@@ -195,6 +191,39 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
     // );
   };
 
+  const getreport = async (id: string) => {
+    try {
+      console.log("Fetching report for paste ID:", id, "and email:", email);
+      const res = await fetch("/api/getreport", {
+        method: "POST",
+        body: JSON.stringify({ id }), // ✅ FIXED
+      })
+      const data = await res.json()
+      if(data.error){
+        console.log("New Analysis:", data.error);
+        return;
+      }
+      console.log("Report data:", data)
+      setResult({
+        response: data.response,
+        done: data.done,
+        error: data.error,
+        category: data.category,
+      })
+      setCode(data.code)
+      setLanguage(data.language || "javascript")
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  useEffect(() => {
+    getreport(paste_id)
+  
+    
+  }, [])
+  
+
 
 
   return (
@@ -294,7 +323,7 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
           />
 
           <h2 className="font-bold">Issues:</h2>
-          <p>
+          <div>
             {result.response["Bug&Error"]?.length === 0 ? (
               <TypeAnimation
                 sequence={["No issues found", 1000]}
@@ -304,25 +333,20 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
                 repeat={1}
               />
             ) : (
-              <TypeAnimation
-                sequence={[
-                  result.response["Bug&Error"]
-                    ?.map(
-                      (issue: string, index: number) =>
-                        `${index + 1}. ${issue}`,
-                    )
-                    .join("\n") || "No issues found",
-                  1000,
-                ]}
-                wrapper="span"
-                speed={50}
-                cursor={false}
-                repeat={1}
-              />
+              result.response["Bug&Error"]?.map((issue: string, index: number) => (
+                <TypeAnimation
+                  key={index}
+                  sequence={[`${index + 1}. ${issue}`, 1000]}
+                  wrapper="div"
+                  speed={50}
+                  cursor={false}  
+                  repeat={1}
+                />
+              ))
             )}
-          </p>
+          </div>
           <h2 className="font-bold">Improvements:</h2>
-          <p>
+          <div>
             {result.response.optimization?.length === 0 ? (
               <TypeAnimation
                 sequence={["No improvements suggested", 1000]}
@@ -332,22 +356,18 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
                 repeat={1}
               />
             ) : (
-              <TypeAnimation
-                sequence={[
-                  result.response["optimization"]
-                    ?.map(
-                      (opt: string, index: number) => `${index + 1}. ${opt}`,
-                    )
-                    .join("\n") || "No improvements suggested",
-                  1000,
-                ]}
-                wrapper="span"
+              result.response.optimization.map((opt: string, index: number) => (
+               <TypeAnimation
+                key={index}
+                sequence={[`${index + 1}. ${opt}`, 1000]}
+                wrapper="div"
                 speed={50}
                 cursor={false}
                 repeat={1}
               />
+              ))
             )}
-          </p>
+          </div>
           <h2 className="font-bold">Scores:</h2>
           <TypeAnimation
             sequence={[

@@ -44,6 +44,8 @@ export async function POST(req: Request) {
         title: report.response.title,
         response: report.response,
         category: report.category,
+        done: report.done,
+        error: report.error,
         saved: report.saved,
         createdAt: new Date(),
         updatedAt: new Date(),

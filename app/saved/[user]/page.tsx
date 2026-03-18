@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import Navbar from "@/components/Navbar"
 import { useSelector } from "react-redux"
 import { RootState } from "@/store/store"
-import { set } from "mongoose"
+import Image from "next/image"
 
 type SavedItem = {
   id: string
@@ -20,6 +20,7 @@ const Page = () => {
   const { data: session } = useSession()
   const router = useRouter()
   const mode = useSelector((state: RootState) => state.theme.mode)
+  const [loading, setloading] = useState(false)
 
   const [saved, setSaved] = useState<SavedItem[]>([])
 
@@ -60,7 +61,7 @@ const Page = () => {
       }),
     });
   
-    const data = await res.json();
+    
   
     // update UI instantly remove from saved list
     setSaved(prev =>
@@ -72,9 +73,12 @@ const Page = () => {
     <div className={`${mode === "dark" ? "bg-black text-white" : "bg-white text-black"} h-screen w-full md:w-83/100 px-2 transition-all duration-1000 overflow-y-auto`}>
       <Navbar />
 
-      <h1 className="text-2xl font-bold mb-4">Saved Reports</h1>
+      <h1 className="text-2xl font-bold mb-4">Saved Reports</h1> 
 
-      {history.length === 0 ? (
+      {!loading && (<div>
+
+      
+        {saved.length === 0 ? (
         <p>No saved reports found.</p>
       ) : (
         <ul className="space-y-4">
@@ -82,7 +86,7 @@ const Page = () => {
             <div key={item.id} className="flex justify-between items-center p-3 border rounded">
               
               {/* LEFT */}
-              <div>
+              <div className="w-1/3">
                 <h2 className="text-lg font-semibold">{item.response.title}</h2>
                 <p className="text-sm text-gray-500">
                   {new Date(item.createdAt).toLocaleString()}
@@ -90,7 +94,7 @@ const Page = () => {
               </div>
 
               {/* MIDDLE */}
-              <div>
+              <div className="w-1/3 text-center">
                 <h2 className="text-md font-semibold">Report Type</h2>
 
                 {item.category === "cp" && (
@@ -107,19 +111,19 @@ const Page = () => {
               </div>
 
               {/* RIGHT */}
-              <div className="flex gap-3">
+              <div className="flex gap-3 w-1/3 justify-end">
                 <button
                   onClick={() => router.push(`/cp/${item.id}`)}
                   className="text-blue-500 hover:text-blue-700"
                 >
-                  View
+                  <Image src="/view.svg" alt="View" width={30} height={30} />
                 </button>
 
                 <button
                   onClick={() => toggleSave(item.id, item.saved)}
                   className="text-red-500 hover:text-red-700"
                 >
-                  Remove
+                  <Image title="Unsaved" src="/delete.svg" alt="Remove" width={30} height={30} />
                 </button>
               </div>
 
@@ -127,6 +131,8 @@ const Page = () => {
           ))}
         </ul>
       )}
+      </div>)}
+      {loading && <p>Loading...</p>}
     </div>
   )
 }

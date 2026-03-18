@@ -22,7 +22,7 @@ export async function POST(req: Request) {
       .sort({ createdAt: -1 }) // latest first
       .lean();
 
-    console.log("Fetched reports:", reports);
+    console.log("Fetched reports in history:", reports);
 
     return NextResponse.json({ history: reports });
 
