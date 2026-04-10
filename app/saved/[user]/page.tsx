@@ -46,7 +46,7 @@ const Page = () => {
     if (session?.user?.email) {
       getSavedReports()
     }
-  }, [])
+  }, [session])
 
   const toggleSave = async (id: string, currentState: boolean) => {
    
@@ -73,7 +73,11 @@ const Page = () => {
     <div className={`${mode === "dark" ? "bg-black text-white" : "bg-white text-black"} h-screen w-full md:w-83/100 px-2 transition-all duration-1000 overflow-y-auto`}>
       <Navbar />
 
-      <h1 className="text-2xl font-bold mb-4">Saved Reports</h1> 
+      <div className="flex justify-between items-center mt-1">
+
+      <h1 className="text-2xl font-bold mb-4">Saved Reports</h1>
+      <h1 className="text-2xl font-bold mb-4">{saved.length} Reports</h1>
+</div>
 
       {!loading && (<div>
 
@@ -101,8 +105,8 @@ const Page = () => {
                   <p className="text-sm text-gray-500">Written</p>
                 )}
 
-                {item.category === "file" && (
-                  <p className="text-sm text-gray-500">Source File</p>
+                {item.category === "doc" && (
+                  <p className="text-sm text-gray-500">Document</p>
                 )}
 
                 {item.category === "repo" && (
@@ -114,14 +118,14 @@ const Page = () => {
               <div className="flex gap-3 w-1/3 justify-end">
                 <button
                   onClick={() => router.push(`/cp/${item.id}`)}
-                  className="text-blue-500 hover:text-blue-700"
+                  className="text-blue-500 hover:text-blue-700 cursor-pointer"
                 >
-                  <Image src="/view.svg" alt="View" width={30} height={30} />
+                  <Image title="view" src="/view.svg" alt="View" width={30} height={30} />
                 </button>
 
                 <button
                   onClick={() => toggleSave(item.id, item.saved)}
-                  className="text-red-500 hover:text-red-700"
+                  className="text-red-500 hover:text-red-700 cursor-pointer"
                 >
                   <Image title="Unsaved" src="/delete.svg" alt="Remove" width={30} height={30} />
                 </button>

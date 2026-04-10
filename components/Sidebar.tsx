@@ -9,8 +9,10 @@ import Image from "next/image";
 import Profile from "./Profile";
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 const Sidebar = () => {
+  const pathname = usePathname();
   const router = useRouter();
   const [viewProfile, setviewProfile] = useState(false);
   const { data: session } = useSession();
@@ -25,13 +27,13 @@ const Sidebar = () => {
   }
 }, [session])
   const mode = useSelector((state: RootState) => state.theme.mode);
-  const options: { name: string; icon: string; path: string }[] = [
-    { name: "New Analysis", icon: "/add.svg", path: "/" },
-    { name: "Analysis History", icon: "/history.svg", path: "/history" },
-    { name: "Saved Reports", icon: "/save.svg", path: "/saved" },
-    { name: "Settings", icon: "/setting.svg", path: "/settings" },
-    { name: "Help", icon: "/help.svg", path: "/help" },
-  ];
+  const [options, setoptions] = useState([
+    { name: "New Analysis", icon: "/add.svg", path: "/",active: true },
+    { name: "Analysis History", icon: "/history.svg", path: "/history", active: false },
+    { name: "Saved Reports", icon: "/save.svg", path: "/saved", active: false },
+    { name: "Settings", icon: "/setting.svg", path: "/settings", active: false },
+    { name: "Help", icon: "/help.svg", path: "/help", active: false },
+  ]);
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const button = e.currentTarget;
@@ -86,24 +88,56 @@ const checkOption = (optionName: string) => {
   switch(optionName){
     case "New Analysis":
       gotoNewAnalysis();
+      setoptions(prevOptions => prevOptions.map(opt => ({ ...opt, active: opt.name === "New Analysis" })));
       break;
     case "Analysis History":
       gotoHistory();
+      setoptions(prevOptions => prevOptions.map(opt => ({ ...opt, active: opt.name === "Analysis History" })));
       break;
     case "Saved Reports":
       gotoSaved();
+      setoptions(prevOptions => prevOptions.map(opt => ({ ...opt, active: opt.name === "Saved Reports" })));
       break;
     case "Settings":
       gotoSettings();
+      setoptions(prevOptions => prevOptions.map(opt => ({ ...opt, active: opt.name === "Settings" })));
       break;
     case "Help":
       gotoHelp();
+      setoptions(prevOptions => prevOptions.map(opt => ({ ...opt, active: opt.name === "Help" })));
       break;
     case "Upgrade":
       gotoUpgrade();
       break;
   }
 };
+
+useEffect(() => {
+setviewProfile(false)
+console.log("Current pathname:", pathname);
+console.log("Username:", username);
+const basePath = pathname.includes("/cp/") ? true :
+                 pathname.includes("/doc/") ? true :
+                 pathname.includes("/repo/") ? true : false;
+  
+  switch(pathname){
+    case "/":
+      setoptions(prevOptions => prevOptions.map(opt => ({ ...opt, active: opt.name === "New Analysis" })));
+      break;
+    case `/history/${username}`:
+      setoptions(prevOptions => prevOptions.map(opt => ({ ...opt, active: opt.name === "Analysis History" })));
+      break;
+    case `/saved/${username}`:
+      setoptions(prevOptions => prevOptions.map(opt => ({ ...opt, active: opt.name === "Saved Reports" })));
+      break;
+    case `/settings/${username}`:
+      setoptions(prevOptions => prevOptions.map(opt => ({ ...opt, active: opt.name === "Settings" })));
+      break;
+    case "/help":
+      setoptions(prevOptions => prevOptions.map(opt => ({ ...opt, active: opt.name === "Help" })));
+      break;
+  }
+}, [pathname, username])
 
   return (
     <div
@@ -121,8 +155,8 @@ const checkOption = (optionName: string) => {
       <ul className={`flex flex-col gap-4 px-2 py-2`}>
         {
           options.map((option) => (
-            <button key={option.name} className={`${mode === "dark" ? "hover:text-gray-800" : " hover:text-white" } hover:bg-gray-400  p-2 rounded flex items-center`} onClick={()=>{ checkOption(option.name); }} >
-              <Image className={`${mode === "dark" ? "invert" : " " } transition-all ease-in-out duration-1000`}  src={option.icon} alt="Logo" width={30} height={30} />
+            <button key={option.name} className={`${mode === "dark" ? "hover:text-gray-800" : " hover:text-white" } hover:bg-gray-400  p-2 rounded flex items-center ${option.active ? "bg-indigo-600 text-white" : ""}`} onClick={()=>{ checkOption(option.name); }} >
+              <Image className={`${mode === "dark" ? "invert" : " " } ${option.active ? "invert" : ""} transition-all ease-in-out duration-500`}  src={option.icon} alt="Logo" width={30} height={30} />
               <p className="ml-2">{option.name}</p>
             </button>
           ))}

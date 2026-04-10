@@ -4,11 +4,12 @@ import Editor from "@monaco-editor/react";
 import Image from "next/image";
 import { useSession } from "next-auth/react"
 
-import { useEffect, useState } from "react";
+import { useEffect, useState,ChangeEvent } from "react";
 import { RootState } from "../store/store";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import Navbar from "@/components/Navbar";
 import { get } from "http";
+import { json } from "stream/consumers";
 // type SavedItem = {
 //   id: string
 //  response: any
@@ -26,9 +27,30 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
   const [done, setdone] = useState(false);
   const [email, setemail] = useState('')
   const [name, setName] = useState('')
+  const [file, setFile] = useState<File | null>(null);
 
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("javascript");
+  const [sourceCode, setSourceCode] = useState<string>("");
+
+  const extensionMap: Record<string, string> = {
+  javascript: ".js,.jsx",
+  typescript: ".ts,.tsx",
+  python: ".py",
+  java: ".java",
+  cpp: ".cpp,.h",
+  c: ".c,.h",
+  go: ".go",
+  rust: ".rs",
+  php: ".php",
+  json: ".json",
+  html: ".html",
+  css: ".css",
+  sql: ".sql",
+        
+        
+        
+};
   
   const [result, setResult] = useState({
     response: {
@@ -154,12 +176,14 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
 
   const handleSave = async (reportData:any) => {
     // Implement save functionality here, e.g., send result to backend to save in database
-    try {      const res = await fetch("/api/history/save", {
+    try {  
+      console.log("language",language)
+      const res = await fetch("/api/history/save", {
         method: "POST",
         body: JSON.stringify({email: email,
     username: name,
     code,
-    id:paste_id, ...reportData ,date: new Date().toLocaleString(),saved, category: "cp",language}),
+    id:paste_id, ...reportData ,date: new Date().toLocaleString(),saved, category: "doc",language}),
       });
       const data = await res.json();
       console.log("Save response:", data);
@@ -222,12 +246,45 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
   
     
   }, [])
+
+  //  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   // Access files from e.target.files or e.currentTarget.files
+  //   const files = e.target.files;
+    
+  //   if (files && files.length > 0) {
+  //     setFile(files[0]); // Get the first file
+  //     console.log("Selected file:", files[0]);
+  //   }
+  // };
+
+  
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    console.log("File input changed:", e.target.files);
+    const file = e.target.files?.[0]; // Access the first file
+    
+    if (file) {
+      const reader = new FileReader();
+
+      // Triggered when file content is successfully read
+      reader.onload = (event: ProgressEvent<FileReader>) => {
+        const content = event.target?.result;
+        if (typeof content === 'string') {
+          setSourceCode(content);
+          setCode(content); // Store the code in state
+        }
+      };
+
+      // Read the raw file content as text
+      reader.readAsText(file);
+    }
+  };
   
 
 
 
   return (
-    <div className=" h-fit overflow-auto no-scrollbar ">
+    <div className=" h-fit  overflow-auto no-scrollbar">
       <Navbar />
       <div className={`flex justify-between mt-4`}>
 <select className={`${mode === "dark" ? "bg-gray-800 text-white" : "bg-gray-300 text-black"} transition-all ease-in-out duration-1000 mt-2 p-2 rounded`} value={language} onChange={(e) => setLanguage(e.target.value)}>
@@ -245,6 +302,15 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
         <option className="rounded" value="css">CSS</option>
         <option className="rounded" value="sql">SQL</option>
       </select>
+      <div className={`${mode === "dark" ? "bg-gray-800 text-white" : "bg-gray-300 text-black"} transition-all ease-in-out duration-1000 p-2 rounded`} >
+<input 
+      
+        type="file" 
+        accept={extensionMap[language]} 
+        onChange={handleFileChange} 
+      />
+      </div>
+      
       <button className={` cursor-pointer ${mode === "dark" ? "invert" : ""} transition-all ease-in-out duration-1000`} onClick={() => {toggleSave(paste_id, saved)}}>
         
         
@@ -253,7 +319,7 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
       </div>
       
       <Editor
-        className={`h-100 my-1 mt-2  border rounded ${mode === "dark" ? "border-white" : "border-gray-700"} transition-all ease-in-out duration-1000 `}
+        className={`h-100  my-1 mt-2 border rounded ${mode === "dark" ? "border-white" : "border-gray-700"} transition-all ease-in-out duration-1000 `}
         height="100%"
         language={language}
         theme={`${mode === "dark" ? "vs-dark" : "vs-light"}`}

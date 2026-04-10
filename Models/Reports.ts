@@ -6,6 +6,7 @@ const ReportSchema = new Schema({
     username: { type: String, require: true },
     id: { type: String, require: true  },
     code: { type: String, require: true },
+    language: { type: String, require: true },
     response: {
       title: { type: String },
       code_explaination: { type: String },

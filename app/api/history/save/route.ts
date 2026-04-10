@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Reports from "@/Models/Reports";
 import connectDB from "@/lib/db";
+import { lazy } from "react";
 
 export async function POST(req: Request) {
   try {
@@ -31,6 +32,7 @@ export async function POST(req: Request) {
             category: report.category,
             saved: report.saved,
             updatedAt: new Date(),
+            language: report.language,
           },
         }
       );
@@ -46,9 +48,11 @@ export async function POST(req: Request) {
         category: report.category,
         done: report.done,
         error: report.error,
+        file: report.file,
         saved: report.saved,
         createdAt: new Date(),
         updatedAt: new Date(),
+        language: report.language,
       });
 
       await newReport.save();

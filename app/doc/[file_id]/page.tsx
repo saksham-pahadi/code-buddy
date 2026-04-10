@@ -1,21 +1,23 @@
 "use client"
 import React from 'react'
-import Navbar from '@/components/Navbar';
-import { useSelector, useDispatch } from "react-redux";
+import WorkspaceFile from '@/components/WorkspaceFile'
+import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { useParams } from "next/navigation";
 
 const page = () => {
     const params = useParams();
     const mode = useSelector((state: RootState) => state.theme.mode);
+    console.log("File ID:", params.file_id);
   return (
     <div className={`${mode === "dark" ? "bg-black text-white" : "bg-white text-black"} h-screen w-full md:w-83/100 px-2 transition-all ease-in-out duration-1000 overflow-y-auto`}>
-      <Navbar />
-      file page
-      <h1>File ID: {params.file_id}</h1>
-      <h1>File ID Type: {typeof params.file_id}</h1>
+    
+       
+      <WorkspaceFile paste_id={params.file_id as string} />
+
     </div>
   )
 }
 
 export default page
+

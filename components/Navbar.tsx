@@ -21,9 +21,6 @@ const Navbar = () => {
     }
   }, [dispatch]);
 
-  const tempAnalysis = () => {
-    alert("This feature is coming soon! 🚀");
-  }
 
   return (
     <div className={`flex sticky top-0 z-10 border-b-2 items-center justify-between w-full h-16 transition-all ease-in-out duration-1000 ${mode === "dark" ? "bg-black text-white border-gray-700" : "bg-white text-black border-gray-300"}`}>
