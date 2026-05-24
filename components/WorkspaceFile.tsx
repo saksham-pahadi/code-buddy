@@ -18,7 +18,7 @@ import { json } from "stream/consumers";
 //   saved: boolean
 // }
 
-export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
+export default function WorkspaceFile({ file_id }: { file_id: string }) {
     // const [savedItems, setSavedItems] = useState<SavedItem[]>([])
   const session = useSession();
   const mode = useSelector((state: RootState) => state.theme.mode);
@@ -159,7 +159,11 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
         setResult(newResult);
         
         if (session.status === "authenticated") {
-          handleSave(newResult);
+          if (file_id === "temp") {
+            return;
+          } else {
+            handleSave(newResult);
+          }
         }
         setloading(false);
       }
@@ -183,7 +187,7 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
         body: JSON.stringify({email: email,
     username: name,
     code,
-    id:paste_id, ...reportData ,date: new Date().toLocaleString(),saved, category: "doc",language}),
+    id:file_id, ...reportData ,date: new Date().toLocaleString(),saved, category: "doc",language}),
       });
       const data = await res.json();
       console.log("Save response:", data);
@@ -242,7 +246,7 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
   }
 
   useEffect(() => {
-    getreport(paste_id)
+    getreport(file_id)
   
     
   }, [])
@@ -311,7 +315,7 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
       />
       </div>
       
-      <button className={` cursor-pointer ${mode === "dark" ? "invert" : ""} transition-all ease-in-out duration-1000`} onClick={() => {toggleSave(paste_id, saved)}}>
+      <button className={` cursor-pointer ${mode === "dark" ? "invert" : ""} transition-all ease-in-out duration-1000`} onClick={() => {toggleSave(file_id, saved)}}>
         
         
         <Image title={`${saved ? "UnSave" : "Save"}`} src={`${saved ? "/saved.svg" : "/saves.svg"}`} alt="Save" width={30} height={30} />
@@ -343,7 +347,7 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
 
       <button
         onClick={handleAnalyze}
-        className={`  mt-4 px-4 py-2 rounded resize ${mode === "dark" ? "bg-gray-300 text-black" : "bg-gray-700 text-white"} transition-all ease-in-out duration-1000 rounded ${loading ? "cursor-not-allowed opacity-50" : ""}`}
+        className={`  mt-4 px-4 py-2 rounded resize ${mode === "dark" ? "bg-gray-300 text-black" : "bg-gray-700 text-white"} transition-all ease-in-out duration-1000 rounded ${loading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
       >
         {`${loading ? "Analyzing..." : "Analyze Code"}`}
       </button>

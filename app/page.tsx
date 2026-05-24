@@ -63,7 +63,7 @@ delay: 30,
          
   
 
-        <p className=" mt-4 text-sm cursor-default">
+        <p className=" mt-4 text-lg cursor-default">
           CodeBuddy is an ai-powered code search and recommendation tool
           designed to help developers find relevant code snippets,
           documentation, and resources quickly and efficiently. with CodeBuddy,
