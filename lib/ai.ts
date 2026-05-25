@@ -100,7 +100,7 @@ try{
     headers: {
       "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
       "Content-Type": "application/json",
-      "HTTP-Referer": "http://localhost:3000",
+      "HTTP-Referer": `${process.env.BASE_URL}`, // Adjust this to your actual referer
       "X-Title": "code-buddy"
     },
     body: JSON.stringify({
