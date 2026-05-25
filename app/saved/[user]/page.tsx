@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar"
 import { useSelector } from "react-redux"
 import { RootState } from "@/store/store"
 import Image from "next/image"
+import GradientCircularProgress from "@/components/GradientCircularProgress"
 
 type SavedItem = {
   id: string
@@ -20,7 +21,7 @@ const Page = () => {
   const { data: session } = useSession()
   const router = useRouter()
   const mode = useSelector((state: RootState) => state.theme.mode)
-  const [loading, setloading] = useState(false)
+  const [loading, setloading] = useState(true)
 
   const [saved, setSaved] = useState<SavedItem[]>([])
 
@@ -35,6 +36,7 @@ const Page = () => {
       console.log("saved reports:", data)
 
       setSaved(data.history || [])
+      setloading(false)
     } catch (err) {
       console.log(err)
     }
@@ -136,7 +138,16 @@ const Page = () => {
         </ul>
       )}
       </div>)}
-      {loading && <p>Loading...</p>}
+      {loading && (<div className="fixed h-screen w-screen inset-0  flex items-center justify-center z-50">
+        {/* <div className={`h-1/2 w-1/2 ${mode === "dark" ? "bg-gray-800 text-white" : "bg-white text-black"} rounded p-4 relative border transition-all ease-in-out duration-1000`}>
+
+        </div> */}
+        <GradientCircularProgress />
+        
+
+      </div>
+      )}
+      {loading && (<div className="fixed h-screen w-screen inset-0 bg-black opacity-50 z-40"></div>)}
     </div>
   )
 }

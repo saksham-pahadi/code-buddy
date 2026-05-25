@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar"
 import { useSelector } from "react-redux"
 import { RootState } from "@/store/store"
 import Image from "next/image"
+import GradientCircularProgress from "@/components/GradientCircularProgress"
 
 type HistoryItem = {
   id: string
@@ -168,11 +169,16 @@ const Page = () => {
         </ul>
       )}
       </div>)}
-      {loading && (
-        <div className="flex justify-center items-center h-64">
-          <p>Loading history...</p>
-        </div>
+      {loading && (<div className="fixed h-screen w-screen inset-0  flex items-center justify-center z-50">
+        {/* <div className={`h-1/2 w-1/2 ${mode === "dark" ? "bg-gray-800 text-white" : "bg-white text-black"} rounded p-4 relative border transition-all ease-in-out duration-1000`}>
+
+        </div> */}
+        <GradientCircularProgress />
+        
+
+      </div>
       )}
+      {loading && (<div className="fixed h-screen w-screen inset-0 bg-black opacity-50 z-40"></div>)}
     </div>
   )
 }
