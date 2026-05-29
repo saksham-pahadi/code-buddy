@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import Reports from "@/Models/Reports";
+import RepoReports from "@/Models/RepoReports";
 import connectDB from "@/lib/db";
 
 export async function POST(req: Request) {
@@ -14,17 +15,24 @@ export async function POST(req: Request) {
     }
 
     await connectDB();
+    const repoSavedReports = await RepoReports.find({
+      email: email,
+      saved: true,
+    })
+      .select("id response category createdAt updatedAt saved language github_id repo_name")
+      .sort({ updatedAt: -1 })
+      .lean();
 
     const savedReports = await Reports.find({
       email: email,
       saved: true,
     })
-      .select("id response category createdAt saved")
-      .sort({ createdAt: -1 })
+      .select("id response category createdAt updatedAt saved language")
+      .sort({ updatedAt: -1 })
       .lean();
 
     return NextResponse.json({
-      history: savedReports,
+      history: savedReports,repoHistory: repoSavedReports
     });
 
   } catch (err) {

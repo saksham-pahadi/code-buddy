@@ -1,14 +1,16 @@
 import { NextResponse } from "next/server";
-import { analyzeCode } from "@/lib/ai";
+import { analyzeCodeRepo } from "@/lib/repoAi";
 
 export async function POST(req: Request) {
-  const { code } = await req.json();
+  const { structure, file } = await req.json();
+  console.log("1 Received request with structure:", structure);
+  console.log("1 Received request with file:", file);
 
-  if (!code) {
-    return NextResponse.json({ error: "No code provided" }, { status: 400 });
+  if (!structure || !file) {
+    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  const result = await analyzeCode(code);
+  const result = await analyzeCodeRepo(structure, file);
 
   return NextResponse.json({ result });
 }

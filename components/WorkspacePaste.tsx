@@ -7,32 +7,19 @@ import ReactSpeedometer, { Transition } from "react-d3-speedometer";
 
 import { useEffect, useState } from "react";
 import { RootState } from "../store/store";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import Navbar from "@/components/Navbar";
-import { get } from "http";
-import { inherits } from "util";
-// type SavedItem = {
-//   id: string
-//  response: any
-//   createdAt: string
-//   category: string
-//   saved: boolean
-// }
-
-
 
 export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
-  // const [savedItems, setSavedItems] = useState<SavedItem[]>([])
   const session = useSession();
   const mode = useSelector((state: RootState) => state.theme.mode);
   const [saved, setsaved] = useState(false);
   const [loading, setloading] = useState(false);
-  const [done, setdone] = useState(false);
   const [email, setemail] = useState("");
   const [name, setName] = useState("");
 
   const [code, setCode] = useState("");
-  const [language, setLanguage] = useState("javascript");
+  const [language, setLanguage] = useState("c");
 
   const [result, setResult] = useState({
     response: {
@@ -192,6 +179,7 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
       body: JSON.stringify({
         id,
         email: email,
+        category: "cp",
         saved: !currentState, // toggle
       }),
     });
@@ -212,7 +200,7 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
       console.log("Fetching report for paste ID:", id, "and email:", email);
       const res = await fetch("/api/getreport", {
         method: "POST",
-        body: JSON.stringify({ id }), // ✅ FIXED
+        body: JSON.stringify({ id, email }), // ✅ FIXED
       });
       const data = await res.json();
       if (data.error) {
@@ -228,6 +216,7 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
       });
       setCode(data.code);
       setLanguage(data.language);
+      setloading(false);
     } catch (err) {
       console.log(err);
     }

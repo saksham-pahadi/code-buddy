@@ -66,6 +66,13 @@ const Navbar = () => {
       position="top-center"
       reverseOrder={false}
       />
+      <Image
+        className={`${mode === "dark" ? "invert" : ""} transition-all duration-1000`}
+        src="/CodeBuddy.png"
+        alt="Logo"
+        width={100}
+        height={50}
+      />
       <button
         onClick={() => {
           const newTheme = mode === "light" ? "dark" : "light";
@@ -77,13 +84,8 @@ const Navbar = () => {
         Switch to {mode === "dark" ? "☀️" : "🌙"}
       </button>
 
-      <Image
-        className={`${mode === "dark" ? "invert" : ""} transition-all duration-1000`}
-        src="/CodeBuddy.png"
-        alt="Logo"
-        width={100}
-        height={50}
-      />
+      
+          {pathname.includes("/cp/") || pathname.includes("/doc/") || pathname.includes("/repo/") ? (
       <div className="flex gap-2">
         <button onClick={()=>{copylink()}}>
           <Image
@@ -95,7 +97,6 @@ const Navbar = () => {
             height={40}
           />
         </button>
-        {pathname.includes("/cp/") || pathname.includes("/doc/") || pathname.includes("/repo/") ? (
           <button onClick={openTemp}>
             <Image
               className={`${mode === "dark" ? "invert" : ""} transition duration-1000 p-1 hover:bg-gray-400 rounded-full cursor-pointer`}
@@ -105,8 +106,9 @@ const Navbar = () => {
             width={40}
             height={40}
           />
-        </button>) : null}
+        </button>
       </div>
+        ) : null}
       {openShare && (<div className={` fixed h-screen w-screen inset-0  flex items-center justify-center z-50`}>
               <div className={`h-1/2 w-1/2 ${mode === "dark" ? "bg-gray-800 text-white" : "bg-white text-black"} rounded p-4 relative border transition-all ease-in-out duration-1000`}>
       <Image className={`${mode === "dark" ? "invert" : ""} font-bold border rounded inline p-2 self-end cursor-pointer`} onClick={()=>{setopenShare(!openShare)}} src="/cross.svg" alt="Close" width={50} height={50} />

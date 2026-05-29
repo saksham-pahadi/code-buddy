@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import Reports from "@/Models/Reports";
+import RepoReports from "@/Models/RepoReports";
 import connectDB from "@/lib/db";
 import { error } from "console";
 
 export async function POST(req: Request) {
   try {
-    const { id } = await req.json();
+    const { id, category } = await req.json();
 
     console.log("Fetching report for in cp:", id);
 
@@ -17,6 +18,18 @@ export async function POST(req: Request) {
     }
 
     await connectDB();
+
+    if(category === "repo"){
+      const repoReports = await RepoReports.find({id })
+      console.log("Fetched repo reports in cp:", repoReports);
+      if (repoReports.length === 0) {
+        return NextResponse.json(
+          {error: "No previous report found" },
+          { status: 200 }
+        );
+      }
+      return NextResponse.json(repoReports[0] );
+    }
 
     const reports = await Reports.find({id })
 

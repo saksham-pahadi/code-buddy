@@ -13,8 +13,10 @@ type SavedItem = {
   id: string
  response: any
   createdAt: string
+  updatedAt: string
   category: string
   saved: boolean
+  language: string
 }
 
 const Page = () => {
@@ -35,7 +37,7 @@ const Page = () => {
       const data = await res.json()
       console.log("saved reports:", data)
 
-      setSaved(data.history || [])
+      setSaved([...data.history, ...data.repoHistory || []])
       setloading(false)
     } catch (err) {
       console.log(err)
@@ -91,16 +93,30 @@ const Page = () => {
           {saved.map((item) => (
             <div key={item.id} className="flex justify-between items-center p-3 border rounded">
               
-              {/* LEFT */}
-              <div className="w-1/3">
-                <h2 className="text-lg font-semibold">{item.response.title}</h2>
-                <p className="text-sm text-gray-500">
-                  {new Date(item.createdAt).toLocaleString()}
-                </p>
-              </div>
+               {/* LEFT */}
+                  <div className="w-5/10 cursor-default justify-start">
+                    <h2 className="text-lg font-semibold">
+                      {item.response.title || "Untitled Report"}
+                    </h2>
+                    <p className="text-sm font-semibold text-gray-500">
+                      Language: {item.language.toLocaleUpperCase()}
+                    </p>
+                  </div>
+                  {/* Time*/}
+                  <div className="w-3/10 cursor-default justify-start">
+                    <h2 className="text-md font-semibold">
+                      Last Updated:{" "}
+                      <span className="text-gray-500 text-sm">
+                        MM/DD/YYYY, Time
+                      </span>{" "}
+                    </h2>
+                    <p className="text-sm text-gray-500">
+                      {new Date(item.updatedAt).toLocaleString()}
+                    </p>
+                  </div>
 
               {/* MIDDLE */}
-              <div className="w-1/3 text-center">
+              <div className="w-1/10 text-center">
                 <h2 className="text-md font-semibold">Report Type</h2>
 
                 {item.category === "cp" && (
@@ -117,7 +133,7 @@ const Page = () => {
               </div>
 
               {/* RIGHT */}
-              <div className="flex gap-3 w-1/3 justify-end">
+              <div className="flex gap-3 w-1/10 justify-end">
                 <button
                   onClick={() => router.push(`/cp/${item.id}`)}
                   className="text-blue-500 hover:text-blue-700 cursor-pointer"

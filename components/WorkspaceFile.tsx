@@ -3,6 +3,7 @@ import { TypeAnimation } from "react-type-animation";
 import Editor from "@monaco-editor/react";
 import Image from "next/image";
 import { useSession } from "next-auth/react"
+import ReactSpeedometer, { Transition } from "react-d3-speedometer";
 
 import { useEffect, useState,ChangeEvent } from "react";
 import { RootState } from "../store/store";
@@ -439,51 +440,56 @@ export default function WorkspaceFile({ file_id }: { file_id: string }) {
             )}
           </div>
           <h2 className="font-bold">Scores:</h2>
-          <TypeAnimation
-            sequence={[
-              `Maintainability: ${result.response?.scores?.maintainability?.toFixed(0)}/10`,
-              1000,
-            ]}
-            wrapper="span"
-            speed={50}
-            cursor={false}
-            repeat={1}
-          />
-          <br />
-          <TypeAnimation
-            sequence={[
-              `Performance: ${result.response?.scores?.performance?.toFixed(0)}/10`,
-              1000,
-            ]}
-            wrapper="span"
-            speed={50}
-            cursor={false}
-            repeat={1}
-          />
-          <br />
-          <TypeAnimation
-            sequence={[
-              `Security: ${result.response?.scores?.security?.toFixed(0)}/10`,
-              1000,
-            ]}
-            wrapper="span"
-            speed={50}
-            cursor={false}
-            repeat={1}
-          />
-          <br />
-          <TypeAnimation
-            sequence={[
-              result.response.scores?.readability
-                ? `Readability: ${result.response.scores.readability.toFixed(0)}/10`
-                : "Readability score not available",
-              1000,
-            ]}
-            wrapper="span"
-            speed={50}
-            cursor={false}
-            repeat={1}
-          />
+          <div className="flex flex-wrap gap-4 justify-evenly pb-5">
+            <div className="w-fit h-35 ">
+              <ReactSpeedometer
+                value={result.response?.scores?.maintainability}
+                needleColor="steelblue"
+                maxValue={10}
+                segments={10}
+                width={250}
+                needleTransitionDuration={10000}
+                currentValueText={`Maintainability: ${result.response?.scores?.maintainability?.toFixed(0)}/10`}
+                needleTransition={Transition.easeBounceOut}
+              />
+            </div>
+            <div className="w-fit h-35">
+              <ReactSpeedometer
+                value={result.response?.scores?.performance}
+                needleColor="steelblue"
+                maxValue={10}
+                segments={10}
+                width={250}
+                needleTransitionDuration={10000}
+                currentValueText={`Performance: ${result.response?.scores?.performance?.toFixed(0)}/10`}
+                needleTransition={Transition.easeBounceOut}
+              />
+            </div>
+            <div className="w-fit h-35 ">
+              <ReactSpeedometer
+                value={result.response?.scores?.security}
+                needleColor="steelblue"
+                maxValue={10}
+                segments={10}
+                width={250}
+                needleTransitionDuration={10000}
+                currentValueText={`Security: ${result.response?.scores?.security?.toFixed(0)}/10`}
+                needleTransition={Transition.easeBounceOut}
+              />
+            </div>
+            <div className="w-fit h-35 ">
+              <ReactSpeedometer
+                value={result.response?.scores?.readability}
+                needleColor="steelblue"
+                maxValue={10}
+                segments={10}
+                width={250}
+                needleTransitionDuration={10000}
+                currentValueText={`Readability: ${result.response?.scores?.readability?.toFixed(0)}/10`}
+                needleTransition={Transition.easeBounceOut}
+              />
+            </div>
+          </div>
         </div>
       )}
 {/* traffic alert */}
