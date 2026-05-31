@@ -8,6 +8,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import Image from "next/image";
 import GradientCircularProgress from "@/components/GradientCircularProgress";
+import toast, { Toaster } from "react-hot-toast";
 
 type HistoryItem = {
   id: string;
@@ -37,7 +38,7 @@ const Page = () => {
       });
 
       const data = await res.json();
-      console.log("history data:", data);
+      // console.log("history data:", data);
 
       setHistory(data.history || []);
       setloading(false);
@@ -54,7 +55,7 @@ const Page = () => {
       });
 
       const data = await res.json();
-      console.log(data);
+      // console.log(data);
 
       setHistory((prev) => prev.filter((item) => item.id !== id));
     } catch (err) {
@@ -108,6 +109,7 @@ const Page = () => {
       className={`${mode === "dark" ? "bg-black text-white" : "bg-white text-black"} h-screen w-full md:w-83/100 px-2 transition-all duration-1000 overflow-y-auto`}
     >
       <Navbar />
+      <Toaster position="top-center" reverseOrder={false} />
       <div className="flex justify-between items-center mt-1">
         <h1 className="text-2xl font-bold mb-4">Analysis History</h1>
         <h1 className="text-2xl font-bold mb-4">{history.length} Reports</h1>
@@ -194,9 +196,14 @@ const Page = () => {
                     <button
                       className={` cursor-pointer ${mode === "dark" ? "invert" : ""} transition-all ease-in-out duration-1000`}
                       onClick={() => {
-                        (setsaved(!item.saved),
-                          toggleSave(item.id, item.saved));
-                      }}
+              toast.promise(toggleSave(item.id, item.saved), {
+                loading: "Saving...",
+                success: (
+                  <b>{`Report ${item.saved ? "unsaved" : "saved"} successfully!`}</b>
+                ),
+                error: <b>Failed to save report.</b>,
+              });
+            }}
                     >
                       <Image
                         className={`${mode === "dark" ? "invert" : ""} transition-all duration-1000 ease-in-out`}

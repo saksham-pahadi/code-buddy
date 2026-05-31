@@ -4,6 +4,7 @@ import Editor from "@monaco-editor/react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import ReactSpeedometer, { Transition } from "react-d3-speedometer";
+import toast, { Toaster } from "react-hot-toast";
 
 import { useEffect, useState } from "react";
 import { RootState } from "../store/store";
@@ -50,7 +51,7 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
 
   function handleChange(value: string | undefined) {
     setCode(value as string);
-    console.log("language:", language);
+    // console.log("language:", language);
   }
 
   const handleAnalyze = async () => {
@@ -85,16 +86,16 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
         body: JSON.stringify({ code }),
       });
 
-      console.log("Response:", res);
+      // console.log("Response:", res);
 
       const data = await res.json();
 
-      console.log("Data received type:", typeof data);
-      console.log("Data received:", data);
+      // console.log("Data received type:", typeof data);
+      // console.log("Data received:", data);
 
       const cleaned = data.result;
-      console.log("Cleaned response type:", typeof cleaned);
-      console.log("Cleaned response:", cleaned);
+      // console.log("Cleaned response type:", typeof cleaned);
+      // console.log("Cleaned response:", cleaned);
       if (cleaned.done && cleaned.error) {
         setloading(false);
         setResult({
@@ -118,8 +119,8 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
         });
       } else {
         const objResponse = JSON.parse(cleaned.replace(/\/\/.*$/gm, ""));
-        console.log("Parsed object response type:", typeof objResponse);
-        console.log("Parsed object response:", objResponse);
+        // console.log("Parsed object response type:", typeof objResponse);
+        // console.log("Parsed object response:", objResponse);
         const newResult = {
           response: objResponse,
           done: true,
@@ -166,7 +167,7 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
         }),
       });
       const data = await res.json();
-      console.log("Save response:", data);
+      // console.log("Save response:", data);
       // alert("Report saved successfully!");
     } catch (err) {
       console.error("Error saving report:", err);
@@ -197,17 +198,17 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
 
   const getreport = async (id: string) => {
     try {
-      console.log("Fetching report for paste ID:", id, "and email:", email);
+      // console.log("Fetching report for paste ID:", id, "and email:", email);
       const res = await fetch("/api/getreport", {
         method: "POST",
-        body: JSON.stringify({ id, email }), // ✅ FIXED
+        body: JSON.stringify({ id, email }), 
       });
       const data = await res.json();
       if (data.error) {
         console.log("New Analysis:", data.error);
         return;
       }
-      console.log("Report data:", data);
+      // console.log("Report data:", data);
       setResult({
         response: data.response,
         done: data.done,
@@ -229,6 +230,7 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
   return (
     <div className=" h-fit overflow-auto no-scrollbar ">
       <Navbar />
+      <Toaster position="top-center" reverseOrder={false} />
       <div className={`flex justify-between mt-4`}>
         <select
           className={`${mode === "dark" ? "bg-gray-800 text-white" : "bg-gray-300 text-black"} transition-all ease-in-out duration-1000 mt-2 p-2 rounded`}
@@ -278,8 +280,14 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
         <button
           className={` cursor-pointer ${mode === "dark" ? "invert" : ""} transition-all ease-in-out duration-1000`}
           onClick={() => {
-            toggleSave(paste_id, saved);
-          }}
+              toast.promise(toggleSave(paste_id, saved), {
+                loading: "Saving...",
+                success: (
+                  <b>{`Report ${saved ? "unsaved" : "saved"} successfully!`}</b>
+                ),
+                error: <b>Failed to save report.</b>,
+              });
+            }}
         >
           <Image
             title={`${saved ? "UnSave" : "Save"}`}
@@ -321,16 +329,7 @@ export default function WorkspacePaste({ paste_id }: { paste_id: string }) {
         {`${loading ? "Analyzing..." : "Analyze Code"}`}
       </button>
 
-      {/* <ReactMarkdown>{result}</ReactMarkdown> */}
-      {
-        //         {
-        //   "summary": "Short 2-3 line explanation of what code does",
-        //   "time_complexity": "Big-O notation with short reason",
-        //   "space_complexity": "Big-O notation with short reason",
-        //   "issues": ["Issue 1", "Issue 2"],
-        //   "improvements": ["Improvement 1", "Improvement 2"]
-        // }
-      }
+      
       {!result.error && result.done && (
         <div className=" w-full border my-4 p-4 rounded">
           <h3 className="text-xl font-bold underline">

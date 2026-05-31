@@ -114,8 +114,8 @@ const checkOption = (optionName: string) => {
 
 useEffect(() => {
 setviewProfile(false)
-console.log("Current pathname:", pathname);
-console.log("Username:", username);
+// console.log("Current pathname:", pathname);
+// console.log("Username:", username);
 const basePath = pathname.includes("/cp/") ? true :
                  pathname.includes("/doc/") ? true :
                  pathname.includes("/repo/") ? true : false;

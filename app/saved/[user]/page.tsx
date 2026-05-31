@@ -8,6 +8,7 @@ import { useSelector } from "react-redux"
 import { RootState } from "@/store/store"
 import Image from "next/image"
 import GradientCircularProgress from "@/components/GradientCircularProgress"
+import toast, { Toaster } from "react-hot-toast";
 
 type SavedItem = {
   id: string
@@ -35,7 +36,7 @@ const Page = () => {
       })
 
       const data = await res.json()
-      console.log("saved reports:", data)
+      // console.log("saved reports:", data)
 
       setSaved([...data.history, ...data.repoHistory || []])
       setloading(false)
@@ -61,6 +62,7 @@ const Page = () => {
       body: JSON.stringify({
         id,
         email: session?.user?.email,
+        category: saved.find((item) => item.id === id)?.category,// determine category based on saved items
         saved: !currentState, // toggle
       }),
     });
@@ -76,6 +78,7 @@ const Page = () => {
   return (
     <div className={`${mode === "dark" ? "bg-black text-white" : "bg-white text-black"} h-screen w-full md:w-83/100 px-2 transition-all duration-1000 overflow-y-auto`}>
       <Navbar />
+      <Toaster position="top-center" reverseOrder={false} />
 
       <div className="flex justify-between items-center mt-1">
 
@@ -142,7 +145,15 @@ const Page = () => {
                 </button>
 
                 <button
-                  onClick={() => toggleSave(item.id, item.saved)}
+                  onClick={() => {
+              toast.promise(toggleSave(item.id, item.saved), {
+                loading: "Saving...",
+                success: (
+                  <b>{`Report ${item.saved ? "removed from" : "saved to"} Saved !`}</b> 
+                ),
+                error: <b>Failed to save report.</b>,
+              });
+            }}
                   className="text-red-500 hover:text-red-700 cursor-pointer"
                 >
                   <Image title="Unsaved" src="/delete.svg" alt="Remove" width={30} height={30} />

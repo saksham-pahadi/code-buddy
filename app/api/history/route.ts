@@ -21,18 +21,18 @@ export async function POST(req: Request) {
 
     const reports = await Reports.find({ email })
       .select("id response category createdAt updatedAt saved language")
-      .sort({ updatedAt: 1 }) 
+      .sort({ updatedAt: -1 }) 
       .lean();
 
     const repoReports = await RepoReports.find({ email })
       .select("id response category createdAt updatedAt saved language github_id repo_name")
-      .sort({ updatedAt: 1 })
+      .sort({ updatedAt: -1 })
       .lean();
 
     console.log("Fetched reports in history:", reports);
     console.log("Fetched repo reports in history:", repoReports);
 
-    return NextResponse.json({ history: [...reports, ...repoReports] });
+    return NextResponse.json({ history: [...repoReports, ...reports] });
 
   } catch (err) {
     console.error("Error fetching history:", err);

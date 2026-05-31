@@ -26,7 +26,7 @@ Return ONLY JSON.
 Code:
 ${file.code}
 `
-console.log("3 Analyzing file-->", file);
+// console.log("3 Analyzing file-->", file);
 
 try{
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -49,7 +49,7 @@ try{
   })
 
   const data = await response.json()
-  console.log("Raw response from Analyzing file:", data.choices[0].message.content);
+  // console.log("Raw response from Analyzing file:", data.choices[0].message.content);
 
   return data.choices[0].message.content
 }catch(err){
@@ -60,12 +60,13 @@ try{
 
 
 export async function summarizeCodeRepo(results: string) {
-console.log("4 Summarizing repository based on file analyses-->", results);
+// console.log("4 Summarizing repository based on file analyses-->", results);
   const prompt = `
-you have to summarize the analysis of a github repository based on the analysis of its individual files.
+you have to summarize the analysis of a github repository in one report based on the analysis of its individual files.
 
 The analysis of individual files is as follows:
 ${results}
+and mention file names in time_complexity, space_complexity, bugs&errors, optimizations fields if it belongs to a specific file.
 
 Return ONLY JSON.
 
@@ -74,8 +75,8 @@ Return ONLY JSON.
  "code_explaination": "2-3 line summary",
  "time_complexity": "O(n): short reason",
  "space_complexity": "O(n): short reason",
- "Bug&Error": [],
- "optimization": [],
+ "Bug&Error": ["issue1 in file1, "issue2 in file2"],
+ "optimization": ["optimization1 in file1, "optimization2 in file2"],
  "scores": {
    "readability": 0,
    "maintainability": 0,
@@ -105,7 +106,7 @@ try{
   })
 
   const data = await response.json()
-  console.log("Raw response from summarizing repository:", data.choices[0].message.content);
+  // console.log("Raw response from summarizing repository:", data.choices[0].message.content);
 
   return data.choices[0].message.content
 }catch(err){
@@ -115,8 +116,8 @@ try{
 }
 
 export async function analyzeCodeRepo(structure:string,file: [{ reponame: string, path: string, code: string }]) {
-    console.log("2 Starting repository analysis with structure -->", structure);
-    console.log("2 Starting repository analysis with files -->", file);
+    // console.log("2 Starting repository analysis with structure -->", structure);
+    // console.log("2 Starting repository analysis with files -->", file);
      const analysisResults = await Promise.all(
     file.map(async (f) => {
 
@@ -132,7 +133,7 @@ export async function analyzeCodeRepo(structure:string,file: [{ reponame: string
     })
   );
 
-  console.log("All file analyses completed");
+  // console.log("All file analyses completed");
 
 
     

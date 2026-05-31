@@ -14,26 +14,27 @@ import Navbar from "@/components/Navbar";
 import toast, { Toaster } from "react-hot-toast";
 
 export default function WorkspaceRepo({ repo_id }: { repo_id: string }) {
-  // const [savedItems, setSavedItems] = useState<SavedItem[]>([])
   const session = useSession();
   const mode = useSelector((state: RootState) => state.theme.mode);
   const [saved, setsaved] = useState(false);
   const [loading, setloading] = useState(false);
   const [loadingMsg, setloadingMsg] = useState("Loading...");
+  const [loadingAnalyze, setloadingAnalyze] = useState(false);
   const [done, setdone] = useState(false);
   const [email, setemail] = useState("");
   const [name, setName] = useState("");
-  const [file, setFile] = useState<File | null>(null);
   const [folderStructure, setfolderStructure] = useState<string>("");
 
-  const [RepoLink, setRepoLink] = useState("");
+  
   let [owner, repo] = ["", ""];
   const [Owner, setOwner] = useState("");
   const [Repo, setRepo] = useState("");
   const [Repositories, setRepositories] = useState<any[]>([]);
-  const [RepositoryContent, setRepositoryContent] = useState<any>({success:false,
-      totalFiles: Number,
-       files: [] });
+  const [RepositoryContent, setRepositoryContent] = useState<any>({
+    success: false,
+    totalFiles: Number,
+    files: [],
+  });
 
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("javascript");
@@ -97,10 +98,10 @@ export default function WorkspaceRepo({ repo_id }: { repo_id: string }) {
         !e.target.value.includes("https://")
       ) {
         setOwner(e.target.value.split("github.com/")[1].split("/")[0]);
-        console.log(
-          "Owner extracted:",
-          e.target.value.split("github.com/")[1].split("/")[0],
-        );
+        // console.log(
+        //   "Owner extracted:",
+        //   e.target.value.split("github.com/")[1].split("/")[0],
+        // );
         return;
       } else if (!e.target.value.includes("https://github.com/")) {
         setOwner(e.target.value);
@@ -115,7 +116,7 @@ export default function WorkspaceRepo({ repo_id }: { repo_id: string }) {
         );
         return;
       }
-      setRepoLink(e.target.value);
+     
 
       [owner, repo] = e.target.value.split("github.com/")[1].split("/");
       setOwner(owner);
@@ -128,9 +129,8 @@ export default function WorkspaceRepo({ repo_id }: { repo_id: string }) {
     }
   }
 
- 
-
   const fetchRepositories = async (username: string) => {
+    
     setloading(true);
     setloadingMsg("Fetching repositories...");
     try {
@@ -139,15 +139,12 @@ export default function WorkspaceRepo({ repo_id }: { repo_id: string }) {
         return;
       }
 
-      const response = await fetch(
-        `/api/fetch-repo`,
-        {
-          method: "POST",
-          body: JSON.stringify({ Owner: username  }),
-        },
-      );
+      const response = await fetch(`/api/fetch-repo`, {
+        method: "POST",
+        body: JSON.stringify({ Owner: username }),
+      });
       const data = await response.json();
-      console.log("Fetched repositories:", data);
+      // console.log("Fetched repositories:", data);
       if (data.message === "Not Found") {
         toast.error(
           `GitHub user "${username}" not found. Please check the username and try again.`,
@@ -165,58 +162,58 @@ export default function WorkspaceRepo({ repo_id }: { repo_id: string }) {
         toast.success(
           `Fetched ${data.length} repositories for user "${username}".`,
         );
-        
       }
-      
     } catch (error) {
       toast.error(
         `Failed to fetch repositories for user "${username}". Please check the GitHub username and try again.`,
       );
       console.error("Error fetching repository data:", error);
-    }finally {
-      setRepositoryContent({success:false,
-        totalFiles: Number,
-         files: [] });
+    } finally {
+      setRepositoryContent({ success: false, totalFiles: Number, files: [] });
       setloading(false);
     }
   };
 
-  async function getRepoContents(path: string, repoName: string, ownerName: string) {
+  async function getRepoContents(
+    repoName: string,
+    ownerName: string,
+  ) {
     setloading(true);
     setRepo(repoName);
-    setloadingMsg(`Fetching contents of repository "${repoName}"...\nThis may take a moment for larger repositories.`);
+    setloadingMsg(
+      `Fetching contents of repository "${repoName}"...\nThis may take a moment for larger repositories.`,
+    );
     const repoUrl = `https://github.com/${ownerName}/${repoName}`;
-    
-     const res = await fetch("/api/fetch-repocontent", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          repoUrl,
-        }),
+
+    const res = await fetch("/api/fetch-repocontent", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        repoUrl,
+      }),
+    });
+
+    const data = await res.json();
+    // console.log("Fetched repository content:", data);
+
+    // console.log("Repository content set to state:", RepositoryContent,data);
+    setRepositoryContent({ ...RepositoryContent, ...data });
+    const structured = async (data: any) => {
+      let structured = "";
+      data.files.map((repo: any) => {
+        structured += `${repo.path}\n`;
       });
-
-      const data = await res.json();
-      console.log("Fetched repository content:", data);
-
-      
-
-    setRepositoryContent({...RepositoryContent, ...data});
-    const structured= async(data: any) =>{ 
-          let structured="";
-            data.files.map((repo: any) => {
-              structured+=`${repo.path}\n`
-            })
-        return structured;
-      }
-        setfolderStructure(await structured(data));
+      return structured;
+    };
+    setfolderStructure(await structured(data));
 
     if (data.error) {
       toast.error(
         `Failed to fetch repository content for "${ownerName}/${repoName}". Please check the repository and try again.`,
       );
-      console.log("Error fetching repository content:", data.error);
+      // console.log("Error fetching repository content:", data.error);
       return;
     }
     toast.success(
@@ -225,14 +222,35 @@ export default function WorkspaceRepo({ repo_id }: { repo_id: string }) {
     setloading(false);
   }
 
-  
-
   const handleAnalyze = async () => {
-    // if (code.trim() === "") {
-    //   alert("Please enter some code to analyze.");
-    //   return;
-    // }
+    if(RepositoryContent.files.length > 20 && folderStructure){
+toast.custom((t) => (
+  <div
+    className={`${
+      t.visible ? 'animate-pulse' : 'animate-pulse'
+    } max-w-md w-full transition-all ease-in-out duration-1000 ${mode === "dark" ? "bg-gray-800 text-white" : "bg-gray-300 text-black"} shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+  >
+    <div className="flex-1 w-0 p-4">
+      <div className="flex items-start">
+        <div className="ml-3 flex-1">
+           This is a large repository. Please Upgrade to Code Buddy Pro to analyze repositories with more than 20 files.
+        </div>
+      </div>
+    </div>
+    <div className="flex border-l border-gray-200">
+      <button
+        onClick={() => toast.dismiss(t.id)}
+        className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+))
+return;
+    }
     setloading(true);
+    setloadingAnalyze(true);
     setloadingMsg("Analyzing repository...");
     setResult({
       done: false,
@@ -257,19 +275,22 @@ export default function WorkspaceRepo({ repo_id }: { repo_id: string }) {
     try {
       const res = await fetch("/api/analyze/github", {
         method: "POST",
-        body: JSON.stringify({ structure: folderStructure,file: RepositoryContent.files }), 
+        body: JSON.stringify({
+          structure: folderStructure,
+          file: RepositoryContent.files,
+        }),
       });
 
-      console.log("Response:", res);
+      // console.log("Response:", res);
 
       const data = await res.json();
 
-      console.log("Data received type:", typeof data);
-      console.log("Data received:", data);
+      // console.log("Data received type:", typeof data);
+      // console.log("Data received:", data);
 
       const cleaned = data.result;
-      console.log("Cleaned response type:", typeof cleaned);
-      console.log("Cleaned response:", cleaned);
+      // console.log("Cleaned response type:", typeof cleaned);
+      // console.log("Cleaned response:", cleaned);
       if (cleaned.done && cleaned.error) {
         setloading(false);
         setResult({
@@ -293,8 +314,8 @@ export default function WorkspaceRepo({ repo_id }: { repo_id: string }) {
         });
       } else {
         const objResponse = JSON.parse(cleaned.replace(/\/\/.*$/gm, ""));
-        console.log("Parsed object response type:", typeof objResponse);
-        console.log("Parsed object response:", objResponse);
+        // console.log("Parsed object response type:", typeof objResponse);
+        // console.log("Parsed object response:", objResponse);
         const newResult = {
           response: objResponse,
           done: true,
@@ -303,10 +324,13 @@ export default function WorkspaceRepo({ repo_id }: { repo_id: string }) {
         };
 
         setResult(newResult);
-        
 
         if (session.status === "authenticated") {
-          handleSave(newResult);
+          if (repo_id === "temp") {
+            return;
+          } else {
+            handleSave(newResult);
+          }
         }
         setloading(false);
       }
@@ -318,12 +342,15 @@ export default function WorkspaceRepo({ repo_id }: { repo_id: string }) {
 
       return;
     }
+    finally {      setloadingAnalyze(false);
+      setloading(false);
+    }
   };
 
   const handleSave = async (reportData: any) => {
     // Implement save functionality here, e.g., send result to backend to save in database
     try {
-      console.log("language", language);
+      // console.log("language", language);
       const res = await fetch("/api/history/save", {
         method: "POST",
         body: JSON.stringify({
@@ -341,8 +368,7 @@ export default function WorkspaceRepo({ repo_id }: { repo_id: string }) {
         }),
       });
       const data = await res.json();
-      console.log("Save response:", data);
-      // alert("Report saved successfully!");
+      // console.log("Save response:", data);
     } catch (err) {
       console.error("Error saving report:", err);
     }
@@ -354,7 +380,8 @@ export default function WorkspaceRepo({ repo_id }: { repo_id: string }) {
       body: JSON.stringify({
         id,
         email: email,
-        saved: !currentState, // toggle
+        category: "repo",
+        saved: !currentState, 
       }),
     });
 
@@ -362,21 +389,22 @@ export default function WorkspaceRepo({ repo_id }: { repo_id: string }) {
 
     // update UI instantly
     setsaved(!currentState);
+    return data;
   };
 
   const getreport = async (id: string) => {
     try {
-      console.log("Fetching report for Repo ID:", id, "and email:", email);
+      // console.log("Fetching report for Repo ID:", id, "and email:", email);
       const res = await fetch("/api/getreport", {
         method: "POST",
-        body: JSON.stringify({ id,category: "repo" }), // ✅ FIXED
+        body: JSON.stringify({ id, category: "repo" }), 
       });
       const data = await res.json();
       if (data.error) {
-        console.log("New Analysis:", data.error);
+        // console.log("New Analysis:", data.error);
         return;
       }
-      console.log("Report data:", data);
+      // console.log("Report data:", data);
       setResult({
         response: data.response,
         done: data.done,
@@ -385,55 +413,75 @@ export default function WorkspaceRepo({ repo_id }: { repo_id: string }) {
       });
       setfolderStructure(data.code);
       setLanguage(data.language);
-      setRepoLink(data.github_id);
       setOwner(data.github_id);
       setRepo(data.repo_name);
       await fetchRepositories(data.github_id);
-      await getRepoContents("", data.repo_name, data.github_id);
+      await getRepoContents(data.repo_name, data.github_id);
     } catch (err) {
       console.log(err);
     }
-  }; 
+  };
 
   useEffect(() => {
     getreport(repo_id);
   }, []);
 
-  
-
   return (
     <div className=" h-fit  overflow-auto no-scrollbar">
       <Navbar />
-      {loading && (<div className="fixed h-screen w-screen inset-0  flex flex-col items-center justify-center z-50">
-        {/* <div className={`h-1/2 w-1/2 ${mode === "dark" ? "bg-gray-800 text-white" : "bg-white text-black"} rounded p-4 relative border transition-all ease-in-out duration-1000`}>
-
-        </div> */}
-        <GradientCircularProgress />
-        <p className="text-white bg-gray-700 p-2 rounded mt-2 animate-pulse">{loadingMsg}</p>
-        
-
-      </div>
+      {loading && (
+        <div className="fixed h-screen w-screen inset-0  flex flex-col items-center justify-center z-50">
+          
+          <GradientCircularProgress />
+          <p className="text-white bg-gray-700 p-2 rounded mt-2 animate-pulse">
+            {loadingMsg}
+          </p>
+        </div>
       )}
-      {loading && (<div className="fixed h-screen w-screen inset-0 bg-black opacity-50 z-40"></div>)}
+      {loading && (
+        <div className="fixed h-screen w-screen inset-0 bg-black opacity-50 z-40"></div>
+      )}
 
       <Toaster position="top-center" reverseOrder={false} />
       <div
-        className={`${mode === "dark" ? "bg-gray-800 text-white" : "bg-gray-300 text-black"} transition-all ease-in-out duration-1000 mt-2 p-2 rounded`}
+        className={`${mode === "dark" ? "bg-gray-800 text-white" : "bg-gray-300 text-black"} transition-all ease-in-out duration-1000 mt-2 p-2 rounded border`}
       >
-        <h1 className="text-2xl font-bold mb-4">Repository Analysis</h1>
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold mb-4">Repository Analysis</h1>
+          <button
+            className={` cursor-pointer ${mode === "dark" ? "invert" : ""} transition-all ease-in-out duration-1000`}
+            onClick={() => {
+              toast.promise(toggleSave(repo_id, saved), {
+                loading: "Saving...",
+                success: (
+                  <b>{`Report ${saved ? "unsaved" : "saved"} successfully!`}</b>
+                ),
+                error: <b>Failed to save report.</b>,
+              });
+            }}
+          >
+            <Image
+              title={`${saved ? "UnSave" : "Save"}`}
+              src={`${saved ? "/saved.svg" : "/saves.svg"}`}
+              alt="Save"
+              width={30}
+              height={30}
+            />
+          </button>
+        </div>
 
         <label htmlFor="repoLink">Github Profile Link / Username :</label>
         <input
           className="ml-2 border"
-          value={RepoLink}
           onChange={handleChange}
+          value={Owner}
           id="repoLink"
           type="text"
         />
         <button
           onClick={(e) => {
             e.preventDefault();
-            fetchRepositories(RepoLink);
+            fetchRepositories(Owner);
           }}
           className={`ml-4 px-4 py-2 rounded ${mode === "dark" ? "bg-gray-300 text-black" : "bg-gray-700 text-white"} transition-all ease-in-out duration-1000`}
         >
@@ -441,14 +489,12 @@ export default function WorkspaceRepo({ repo_id }: { repo_id: string }) {
         </button>
       </div>
 
-
-
       {/* Repositories */}
-      <div 
-      className={`mt-4`}
-      >
+      <div className={`mt-4`}>
         {Repositories.length > 0 && (
-          <div className={`${mode === "dark" ? "bg-gray-800 text-white" : "bg-gray-300 text-black"} transition-all ease-in-out duration-1000 mt-2 p-2 rounded border`}>
+          <div
+            className={`${mode === "dark" ? "bg-gray-800 text-white" : "bg-gray-300 text-black"} transition-all ease-in-out duration-1000 mt-2 p-2 rounded border`}
+          >
             <div className="flex items-center">
               <Image
                 className={` border-2 rounded-full p-1 transition-all ease-in-out duration-1000 ${mode === "dark" ? "border-gray-300" : "border-gray-700"}`}
@@ -461,13 +507,19 @@ export default function WorkspaceRepo({ repo_id }: { repo_id: string }) {
                 {Repositories[0].owner.login}
               </span>
             </div>
-            <h2 className="text-xl font-bold mb-2">Fetched Repositories:</h2>
-            <ul className="flex flex-wrap justify-left gap-y-5">
+            <h2 className="text-xl font-bold my-2">{Repositories.length} Repositories Found - Fetch Repositories</h2>
+            <ul className={`flex flex-wrap justify-left content-start gap-y-2 h-fit max-h-100 overflow-auto border rounded p-2 bg-gray-400`}>
+              
               {Repositories.map((repo: any) => (
                 <li
                   key={repo.id}
                   className={`ml-4 border cursor-pointer rounded-sm h-fit p-5 w-31/100 transition-background ease-in-out duration-1000 hover:scale-105 hover:border-2 ${mode === "dark" ? "bg-gray-700 " : "bg-gray-200 "}`}
-                  onClick={() => getRepoContents(repo.path || "", repo.name, repo.owner.login)}
+                  onClick={() =>
+                    getRepoContents(
+                      repo.name,
+                      repo.owner.login,
+                    )
+                  }
                 >
                   <Link
                     href={repo.html_url}
@@ -475,8 +527,9 @@ export default function WorkspaceRepo({ repo_id }: { repo_id: string }) {
                     rel="noopener noreferrer"
                     className="text-blue-500 cursor-alias "
                   >
-                  <h3 className="text-lg hover:underline rounded inline-block">{repo.name}</h3>
-                    
+                    <h3 className="text-lg hover:underline rounded inline-block">
+                      {repo.name}
+                    </h3>
                   </Link>
                   <p className="text-md ">{repo.description}</p>
                   <div className="flex w-full flex-wrap mt-2">
@@ -490,7 +543,6 @@ export default function WorkspaceRepo({ repo_id }: { repo_id: string }) {
                     </p>
                     <p className="text-xs w-1/2 ">
                       Stars: {repo.stargazers_count}
-                      
                     </p>
                     <p className="text-xs w-1/2 ">Forks: {repo.forks_count}</p>
                     <p className="text-xs w-1/2 ">Language: {repo.language}</p>
@@ -500,38 +552,42 @@ export default function WorkspaceRepo({ repo_id }: { repo_id: string }) {
             </ul>
           </div>
         )}
-        
       </div>
       {Repositories.length === 0 && !folderStructure && (
-          <p className="mt-4">
-            No repositories fetched yet. Please enter a GitHub profile link and
-            click "Fetch Repositories".
-          </p>
-        )}
+        <p className="mt-4">
+          No repositories fetched yet. Please enter a GitHub profile link and
+          click "Fetch Repositories".
+        </p>
+      )}
       {folderStructure && (
-        <div className={`mt-4 ${mode === "dark" ? "bg-gray-800 text-white" : "bg-gray-300 text-black"} transition-all ease-in-out duration-1000 mt-2 p-2 rounded border`}>
-          <h2 className="text-xl font-bold mb-2">Folder Structure:</h2>
-          <pre className="text-md">{folderStructure}</pre>
+        <div
+          className={`mt-4 ${mode === "dark" ? "bg-gray-800 text-white" : "bg-gray-300 text-black"} transition-all ease-in-out duration-1000 mt-2 p-2 rounded border`}
+        >
+          <h2 className="text-xl font-bold mb-2">Folder Structure of <Link className="hover:text-blue-500 hover:underline cursor-alias" href={`https://github.com/${RepositoryContent.owner}/${RepositoryContent.name}`} target="_blank" rel="noopener noreferrer">{RepositoryContent.name}</Link></h2>
+          <pre className={`text-md h-fit max-h-100 overflow-auto border rounded p-2 bg-gray-400 ${mode === "dark" ? " text-black" : " text-white"} transition-all ease-in-out duration-1000`}>{folderStructure}</pre>
         </div>
       )}
       {/* Repository Content */}
-      <div 
-      >
-        {RepositoryContent.success  && (
-          <div className={` mt-4 ${mode === "dark" ? "bg-gray-800 text-white" : "bg-gray-300 text-black"} transition-all ease-in-out duration-1000 mt-2 p-2 rounded border`}>
+      <div>
+        {RepositoryContent.success && (
+          <div
+            className={` mt-4 ${mode === "dark" ? "bg-gray-800 text-white" : "bg-gray-300 text-black"} transition-all ease-in-out duration-1000 mt-2 p-2 rounded border`}
+          >
             <div className="flex items-center justify-between mb-4">
-<span>
-
-            <h2 className="text-xl font-bold mb-2">{RepositoryContent.owner}/{RepositoryContent.name} Content:</h2>
-            <p className="text-md mb-2">
-              Fetched {RepositoryContent.totalFiles} files for repository "{RepositoryContent.name}".
-            </p>
-</span>
-<span className="flex items-center gap-2">
-  <button onClick={handleAnalyze}>Analyze Repository</button>
-</span>
+              <span>
+                <h2 className="text-xl font-bold mb-2">
+                  {RepositoryContent.owner}/{RepositoryContent.name} Content:
+                </h2>
+                <p className="text-md mb-2">
+                  Fetched {RepositoryContent.totalFiles} files for repository "
+                  {RepositoryContent.name}".
+                </p>
+              </span>
+              <span className={`flex items-center gap-2 bg-blue-500 p-4 rounded text-white font-bold`}>
+                <button onClick={handleAnalyze}>{loadingAnalyze ? "Analyzing..." : "Analyze Repository"}</button>
+              </span>
             </div>
-            <ul className="flex flex-wrap justify-left gap-y-5">
+            <ul className={`flex flex-wrap content-start justify-left gap-y-2 h-fit max-h-100 overflow-auto border rounded p-2 bg-gray-400`}>
               {RepositoryContent.files.map((item: any) => (
                 <li
                   key={item.path}

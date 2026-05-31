@@ -50,7 +50,7 @@ const Navbar = () => {
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
-    console.log("Saved theme:", savedTheme);
+    // console.log("Saved theme:", savedTheme);
 
     if (savedTheme === "dark") {
       dispatch(setDark());
